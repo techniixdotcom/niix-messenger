@@ -1,0 +1,33 @@
+// Applied ONLY by `build-niix.sh --update` via `--init-script`.
+// It is never part of a normal build, so it cannot affect reproducible builds.
+// It bumps gradle/libs.versions.toml to the newest STABLE versions.
+initscript {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.51.0'
+        classpath 'nl.littlerobots.vcu:plugin:0.8.5'
+    }
+}
+
+gradle.rootProject {
+    apply plugin: 'com.github.ben-manes.versions'
+    apply plugin: 'nl.littlerobots.version-catalog-update'
+
+    // Treat anything that isn't a clean release as unstable, so updates never
+    // move onto alpha/beta/rc/snapshot/milestone builds.
+    def isNonStable = { String version ->
+        def hasStableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
+        def looksStable = version ==~ /^[0-9]+(\.[0-9]+)*(-[0-9]+)?$/
+        def hasUnstableKeyword = ['ALPHA', 'BETA', 'RC', 'CR', 'M', 'EAP', 'SNAPSHOT', 'DEV', 'PREVIEW', 'PRE'].any {
+            version.toUpperCase().contains("-$it") || version.toUpperCase().contains(".$it") || version.toUpperCase() ==~ /.*${it}[0-9]+.*/
+        }
+        return hasUnstableKeyword || !(hasStableKeyword || looksStable)
+    }
+
+    tasks.named('dependencyUpdates').configure {
+        rejectVersionIf { isNonStable(it.candidate.version) }
+    }
+}

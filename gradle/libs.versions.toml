@@ -1,0 +1,57 @@
+[versions]
+agp = "8.7.3"
+kotlin = "2.2.21"
+coroutines = "1.9.0"
+coreKtx = "1.13.1"
+appcompat = "1.7.0"
+material = "1.12.0"
+activity = "1.9.3"
+lifecycle = "2.8.7"
+libsignal = "0.86.5"
+sqlcipher = "4.15.0"
+androidxSqlite = "2.4.0"
+tink = "1.15.0"
+bouncycastle = "1.79"
+zxing = "3.5.3"
+desugarJdkLibs = "2.1.5"
+kmpTorRuntime = "2.6.0"
+kmpTorResource = "408.22.0"
+zxingEmbedded = "4.3.0"
+junit = "4.13.2"
+androidxJunit = "1.2.1"
+espresso = "3.6.1"
+robolectric = "4.13"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycle" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+
+libsignal-android = { group = "org.signal", name = "libsignal-android", version.ref = "libsignal" }
+libsignal-client = { group = "org.signal", name = "libsignal-client", version.ref = "libsignal" }
+
+sqlcipher-android = { group = "net.zetetic", name = "sqlcipher-android", version.ref = "sqlcipher" }
+androidx-sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "androidxSqlite" }
+tink-android = { group = "com.google.crypto.tink", name = "tink-android", version.ref = "tink" }
+bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncycastle" }
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+kmp-tor-runtime = { module = "io.matthewnelson.kmp-tor:runtime", version.ref = "kmpTorRuntime" }
+kmp-tor-resource-exec-tor = { module = "io.matthewnelson.kmp-tor:resource-exec-tor", version.ref = "kmpTorResource" }
+zxing-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxingEmbedded" }
+
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
