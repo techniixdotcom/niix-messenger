@@ -1,5 +1,6 @@
-[img]https://ibb.co/VYb8Q6JQ[/img]
-[img]https://ibb.co/chKHN7s9[/img]
+[logo]: https://ibb.co/VYb8Q6JQ "screen 1"
+[logo]: (https://ibb.co/chKHN7s9 "screen 2"
+
 
 
 # NiiX
