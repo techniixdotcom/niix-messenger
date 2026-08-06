@@ -13,6 +13,7 @@ internal object PassphraseKdf {
     private const val ITERATIONS = 3
     private const val PARALLELISM = 2
     private val INFO = "niix-db-key-v1".toByteArray()
+    private val DEVICE_ONLY_INFO = "niix-db-key-device-only-v1".toByteArray()
 
     fun derivePasscodeKey(passcode: ByteArray, salt: ByteArray): ByteArray {
         val params = Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
@@ -31,6 +32,20 @@ internal object PassphraseKdf {
     fun combine(deviceSecret: ByteArray, passcodeKey: ByteArray): ByteArray {
         val hkdf = HKDFBytesGenerator(SHA256Digest())
         hkdf.init(HKDFParameters(deviceSecret, passcodeKey, INFO))
+        val out = ByteArray(KEY_BYTES)
+        hkdf.generateBytes(out, 0, out.size)
+        return out
+    }
+
+    /**
+     * The database key used when passcode protection is turned off: derived from the
+     * hardware-backed device secret alone, with a distinct HKDF "info" value so this key is
+     * cryptographically unrelated to (and not derivable from, or a stepping stone toward) any
+     * passcode-derived key ever used on this device.
+     */
+    fun deviceOnlyKey(deviceSecret: ByteArray): ByteArray {
+        val hkdf = HKDFBytesGenerator(SHA256Digest())
+        hkdf.init(HKDFParameters(deviceSecret, null, DEVICE_ONLY_INFO))
         val out = ByteArray(KEY_BYTES)
         hkdf.generateBytes(out, 0, out.size)
         return out

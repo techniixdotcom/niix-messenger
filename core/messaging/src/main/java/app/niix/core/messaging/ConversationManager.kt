@@ -71,6 +71,12 @@ class ConversationManager(
         storage.conversations.get(id)
     }
 
+    /** Every saved contact, including ones whose conversation was deleted -- deleting a
+     * conversation never removes the contact itself (see [deleteConversation]). */
+    suspend fun listContacts(): List<Contact> = withContext(Dispatchers.IO) {
+        storage.contacts.list()
+    }
+
     suspend fun messagesFor(conversationId: String): List<Message> = withContext(Dispatchers.IO) {
         storage.messages.listForConversation(conversationId)
     }
@@ -168,8 +174,9 @@ class ConversationManager(
             conversation
         }
 
-    suspend fun searchMessageConversationIds(query: String): List<String> = withContext(Dispatchers.IO) {
-        if (query.isBlank()) emptyList() else runCatching { storage.messages.searchConversationIds(query) }.getOrDefault(emptyList())
+    /** Conversation id -> most recent matching message body, for showing the matched line in search results. */
+    suspend fun searchMessageMatches(query: String): Map<String, String> = withContext(Dispatchers.IO) {
+        if (query.isBlank()) emptyMap() else runCatching { storage.messages.searchMatchingBodies(query) }.getOrDefault(emptyMap())
     }
 
     suspend fun renameContact(conversationId: String, newName: String) = withContext(Dispatchers.IO) {
@@ -307,6 +314,47 @@ class ConversationManager(
         return sb.toString()
     }
 
+    /**
+     * Deletes a conversation and its local messages/attachments only. The underlying contact
+     * (and, for a direct chat, the already-established encrypted session) is left completely
+     * untouched -- they stay in your contacts and you can message them again without
+     * re-adding them or re-exchanging keys.
+     */
+    suspend fun deleteConversation(conversationId: String) = withContext(Dispatchers.IO) {
+        val conversation = storage.conversations.get(conversationId) ?: return@withContext
+        storage.attachments.listForConversation(conversationId).forEach { attachment ->
+            runCatching { File(attachment.filePath).delete() }
+        }
+        storage.attachments.deleteForConversation(conversationId)
+        storage.messages.deleteForConversation(conversationId)
+        if (conversation.type == ConversationType.GROUP) {
+            storage.members.replaceAll(conversationId, emptyList(), emptyList())
+        }
+        storage.conversations.delete(conversationId)
+        notifyChanged()
+    }
+
+    /**
+     * Returns the existing conversation with [onion], or creates a fresh (empty) one if it was
+     * previously removed via [deleteConversation]. The contact record and its established
+     * session survive that deletion, so this never re-adds the contact or re-exchanges keys --
+     * it just gives the person a conversation to open again.
+     */
+    suspend fun ensureConversationForContact(onion: String): Conversation = withContext(Dispatchers.IO) {
+        storage.conversations.get(onion)?.let { return@withContext it }
+        val title = storage.contacts.get(onion)?.displayName?.takeIf { it.isNotBlank() } ?: onion.take(8)
+        val conversation = Conversation(
+            id = onion,
+            type = ConversationType.DIRECT,
+            title = title,
+            disappearSeconds = 0,
+            createdAtEpochMillis = now(),
+        )
+        storage.conversations.upsert(conversation)
+        notifyChanged()
+        conversation
+    }
+
     suspend fun displayName(onion: String): String = withContext(Dispatchers.IO) {
         storage.contacts.get(onion)?.displayName?.takeIf { it.isNotBlank() } ?: onion.take(8)
     }
@@ -343,6 +391,37 @@ class ConversationManager(
             syncGroup(conversationId)
             true
         }
+
+    /**
+     * Leaves a group: tells the remaining members you're gone, then removes the group and its
+     * messages from this device only (the remaining members' copies are untouched). If you were
+     * the only admin, another member is promoted first so the group isn't left without one.
+     */
+    suspend fun leaveGroup(conversationId: String): Boolean = withContext(Dispatchers.IO) {
+        val conversation = storage.conversations.get(conversationId) ?: return@withContext false
+        if (conversation.type != ConversationType.GROUP) return@withContext false
+        val self = selfOnion()
+        val members = storage.members.listForConversation(conversationId)
+        val remaining = members.filter { it.memberOnion.value != self }
+        val iWasSoleAdmin = members.any { it.memberOnion.value == self && it.role == GroupRole.ADMIN } &&
+            remaining.none { it.role == GroupRole.ADMIN }
+        if (iWasSoleAdmin && remaining.isNotEmpty()) {
+            storage.members.setRole(conversationId, remaining.first().memberOnion.value, GroupRole.ADMIN)
+        }
+        val remainingAfterPromotion = storage.members.listForConversation(conversationId)
+            .filter { it.memberOnion.value != self }
+        val allOnions = remainingAfterPromotion.map { it.memberOnion.value }
+        val admins = remainingAfterPromotion.filter { it.role == GroupRole.ADMIN }.map { it.memberOnion.value }
+        val invite = WireMessage.GroupInvite(conversationId, conversation.title, allOnions, admins)
+        remaining.forEach { runCatching { ensureSession(it.memberOnion.value); sendWire(it.memberOnion.value, invite) } }
+        storage.attachments.listForConversation(conversationId).forEach { runCatching { File(it.filePath).delete() } }
+        storage.attachments.deleteForConversation(conversationId)
+        storage.messages.deleteForConversation(conversationId)
+        storage.members.replaceAll(conversationId, emptyList(), emptyList())
+        storage.conversations.delete(conversationId)
+        notifyChanged()
+        true
+    }
 
     private suspend fun syncGroup(conversationId: String) {
         val conversation = storage.conversations.get(conversationId) ?: return

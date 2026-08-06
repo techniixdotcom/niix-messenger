@@ -47,6 +47,29 @@ class MessageDao internal constructor(private val secureDatabase: SecureDatabase
         return ids.toList()
     }
 
+    /**
+     * For each conversation with a matching message, returns the body of its most recent
+     * match -- so search results can show the actual line that matched, not just which
+     * conversation to open.
+     */
+    fun searchMatchingBodies(query: String): Map<String, String> {
+        val matches = LinkedHashMap<String, String>()
+        db.rawQuery(
+            "SELECT ${t.COL_CONVERSATION_ID}, ${t.COL_BODY} FROM ${t.TABLE} " +
+                "WHERE ${t.COL_DELETED} = 0 AND ${t.COL_BODY} LIKE ? " +
+                "ORDER BY ${t.COL_CREATED_AT} DESC",
+            arrayOf("%$query%"),
+        ).use { c ->
+            while (c.moveToNext()) {
+                val conversationId = c.getString(0)
+                // ORDER BY created_at DESC means the first row seen per conversation is the
+                // most recent match; keep only that one.
+                if (!matches.containsKey(conversationId)) matches[conversationId] = c.getString(1)
+            }
+        }
+        return matches
+    }
+
     fun pendingOutgoing(): List<Message> {
         val messages = mutableListOf<Message>()
         db.rawQuery(
@@ -55,6 +78,10 @@ class MessageDao internal constructor(private val secureDatabase: SecureDatabase
             arrayOf(MessageDirection.OUTGOING.name, DeliveryState.PENDING.name),
         ).use { c -> while (c.moveToNext()) messages.add(c.toMessage()) }
         return messages
+    }
+
+    fun deleteForConversation(conversationId: String) {
+        db.delete(t.TABLE, "${t.COL_CONVERSATION_ID} = ?", arrayOf(conversationId))
     }
 
     fun updateDeliveryState(id: String, state: DeliveryState) {

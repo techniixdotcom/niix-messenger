@@ -1,6 +1,7 @@
 package app.niix.core.storage
 
 import java.nio.CharBuffer
+import java.security.SecureRandom
 
 enum class UnlockResult {
     SUCCESS,
@@ -13,14 +14,25 @@ class AppLockManager internal constructor(
     private val secretProvider: DatabaseSecretProvider,
 ) {
 
-    fun isPasscodeSet(): Boolean = secretProvider.isInitialized()
+    /** Has this device ever completed setup at all. True forever after onboarding, independent
+     * of whether passcode protection is currently on or off. */
+    fun isSetUp(): Boolean = secretProvider.isInitialized()
+
+    /** Is a passcode currently required to open the database. Toggleable via [enablePasscode] /
+     * [disablePasscode] on an already-set-up account. */
+    fun isPasscodeEnabled(): Boolean = secretProvider.isPasscodeConfigured()
 
     fun isUnlocked(): Boolean = secureDatabase.isOpen()
 
     fun isDuressSet(): Boolean = secretProvider.isDuressSet()
 
+    fun isDisguiseEnabled(): Boolean = secretProvider.isDisguiseEnabled()
+
+    fun setDisguiseEnabled(enabled: Boolean) = secretProvider.setDisguiseEnabled(enabled)
+
+    /** First-time setup with a passcode (the original onboarding flow, unchanged). */
     fun setPasscode(passcode: CharArray): Boolean {
-        if (isPasscodeSet()) return false
+        if (isSetUp()) return false
         val deviceSecret = secretProvider.deviceSecret()
         val salt = secretProvider.passcodeSalt()
         val dbKey = deriveDbKey(passcode, salt, deviceSecret)
@@ -33,9 +45,23 @@ class AppLockManager internal constructor(
         }
     }
 
+    /** First-time setup with no passcode: creates the account keyed by the device secret alone. */
+    fun setUpWithoutPasscode(): Boolean {
+        if (isSetUp()) return false
+        val deviceSecret = secretProvider.deviceSecret()
+        val dbKey = PassphraseKdf.deviceOnlyKey(deviceSecret)
+        return try {
+            secureDatabase.openWith(dbKey)
+            true
+        } finally {
+            dbKey.fill(0)
+            deviceSecret.fill(0)
+        }
+    }
+
     fun setDuressPasscode(passcode: CharArray): Boolean {
-        if (!isPasscodeSet()) return false
-        val salt = ByteArray(SALT_BYTES).also { java.security.SecureRandom().nextBytes(it) }
+        if (!isPasscodeEnabled()) return false
+        val salt = ByteArray(SALT_BYTES).also { SecureRandom().nextBytes(it) }
         val passcodeBytes = encodeUtf8(passcode)
         return try {
             val verifier = PassphraseKdf.derivePasscodeKey(passcodeBytes, salt)
@@ -48,12 +74,29 @@ class AppLockManager internal constructor(
     }
 
     fun unlock(passcode: CharArray): UnlockResult {
-        if (!isPasscodeSet()) return UnlockResult.FAILED
+        if (!isPasscodeEnabled()) return UnlockResult.FAILED
         if (isUnlocked()) return UnlockResult.SUCCESS
         if (matchesDuress(passcode)) return UnlockResult.DURESS
         val deviceSecret = secretProvider.deviceSecret()
         val salt = secretProvider.passcodeSalt()
         val dbKey = deriveDbKey(passcode, salt, deviceSecret)
+        return try {
+            secureDatabase.openWith(dbKey)
+            UnlockResult.SUCCESS
+        } catch (_: Exception) {
+            UnlockResult.FAILED
+        } finally {
+            dbKey.fill(0)
+            deviceSecret.fill(0)
+        }
+    }
+
+    /** Opens an already-set-up, passcode-disabled database with no user input needed. */
+    fun unlockWithoutPasscode(): UnlockResult {
+        if (!isSetUp() || isPasscodeEnabled()) return UnlockResult.FAILED
+        if (isUnlocked()) return UnlockResult.SUCCESS
+        val deviceSecret = secretProvider.deviceSecret()
+        val dbKey = PassphraseKdf.deviceOnlyKey(deviceSecret)
         return try {
             secureDatabase.openWith(dbKey)
             UnlockResult.SUCCESS
@@ -73,6 +116,51 @@ class AppLockManager internal constructor(
         return try {
             secureDatabase.changePassphrase(newKey)
             true
+        } finally {
+            newKey.fill(0)
+            deviceSecret.fill(0)
+        }
+    }
+
+    /**
+     * Turns off passcode protection on an already-unlocked, already-set-up account: re-keys the
+     * live database to a device-secret-only key, and only once that re-key has actually
+     * succeeded, removes the passcode and duress records. If the re-key fails for any reason,
+     * nothing is changed -- the database keeps working with the passcode exactly as before.
+     */
+    fun disablePasscode(): Boolean {
+        if (!isUnlocked()) return false
+        val deviceSecret = secretProvider.deviceSecret()
+        val newKey = PassphraseKdf.deviceOnlyKey(deviceSecret)
+        return try {
+            secureDatabase.rekeyWithBackup(newKey)
+            secretProvider.clearPasscodeAndDuress()
+            true
+        } catch (_: Exception) {
+            false
+        } finally {
+            newKey.fill(0)
+            deviceSecret.fill(0)
+        }
+    }
+
+    /**
+     * Turns on passcode protection on an already-unlocked, device-only-keyed account: re-keys
+     * the live database to a fresh passcode-derived key, and only once that succeeds, persists
+     * the salt that key depends on -- so the persisted "passcode enabled" state and the
+     * database's actual key can never disagree with each other.
+     */
+    fun enablePasscode(passcode: CharArray): Boolean {
+        if (!isUnlocked()) return false
+        val deviceSecret = secretProvider.deviceSecret()
+        val candidateSalt = ByteArray(SALT_BYTES).also { SecureRandom().nextBytes(it) }
+        val newKey = deriveDbKey(passcode, candidateSalt, deviceSecret)
+        return try {
+            secureDatabase.rekeyWithBackup(newKey)
+            secretProvider.writePasscodeSalt(candidateSalt)
+            true
+        } catch (_: Exception) {
+            false
         } finally {
             newKey.fill(0)
             deviceSecret.fill(0)

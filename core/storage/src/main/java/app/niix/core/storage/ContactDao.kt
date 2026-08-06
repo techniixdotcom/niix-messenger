@@ -29,6 +29,19 @@ class ContactDao internal constructor(private val secureDatabase: SecureDatabase
         }
     }
 
+    /** All saved contacts, alphabetical by display name. Independent of conversations -- a
+     * contact stays here even after its conversation is deleted. */
+    fun list(): List<Contact> {
+        val result = mutableListOf<Contact>()
+        db.rawQuery(
+            "SELECT * FROM ${t.TABLE} ORDER BY ${t.COL_DISPLAY_NAME} COLLATE NOCASE ASC",
+            emptyArray(),
+        ).use { c ->
+            while (c.moveToNext()) result.add(c.toContact())
+        }
+        return result
+    }
+
     fun isKnown(onion: String): Boolean {
         db.rawQuery("SELECT 1 FROM ${t.TABLE} WHERE ${t.COL_ONION} = ? LIMIT 1", arrayOf(onion)).use { c ->
             return c.moveToFirst()

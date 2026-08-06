@@ -65,6 +65,7 @@ class SecureStorage private constructor(
         private fun create(appContext: Context): SecureStorage {
             val secretProvider = DatabaseSecretProvider(appContext)
             val database = SecureDatabase(appContext)
+            database.recoverFromInterruptedRekey()
             val appLock = AppLockManager(database, secretProvider)
             val files = EncryptedFileStore(appContext)
             val attachmentCipher = AttachmentCipher()

@@ -14,8 +14,15 @@ internal class DatabaseSecretProvider(
     private val saltFile = File(dir, PASSCODE_SALT_FILENAME)
     private val duressSaltFile = File(dir, DURESS_SALT_FILENAME)
     private val duressVerifierFile = File(dir, DURESS_VERIFIER_FILENAME)
+    private val disguiseDisabledFile = File(dir, DISGUISE_DISABLED_FILENAME)
 
-    fun isInitialized(): Boolean = secretFile.exists() && saltFile.exists()
+    /** Has this device ever completed setup at all (device secret exists). True forever after
+     * onboarding, regardless of whether passcode protection is currently on or off. */
+    fun isInitialized(): Boolean = secretFile.exists()
+
+    /** Is a passcode currently the active way to open the database. Toggleable independently of
+     * [isInitialized] via [writePasscodeSalt] / [clearPasscodeAndDuress]. */
+    fun isPasscodeConfigured(): Boolean = saltFile.exists()
 
     @Synchronized
     fun deviceSecret(): ByteArray {
@@ -42,6 +49,12 @@ internal class DatabaseSecretProvider(
         return salt
     }
 
+    /** Persists a passcode salt that was already used to key the database (see
+     * [AppLockManager.enablePasscode]) -- written only after the re-key it belongs to has
+     * already succeeded, so this file and the database's actual key never disagree. */
+    @Synchronized
+    fun writePasscodeSalt(salt: ByteArray) = writeAtomically(saltFile, salt)
+
     fun isDuressSet(): Boolean = duressSaltFile.exists() && duressVerifierFile.exists()
 
     fun duressSalt(): ByteArray? = if (duressSaltFile.exists()) duressSaltFile.readBytes() else null
@@ -52,6 +65,23 @@ internal class DatabaseSecretProvider(
     fun writeDuress(salt: ByteArray, verifier: ByteArray) {
         writeAtomically(duressSaltFile, salt)
         writeAtomically(duressVerifierFile, verifier)
+    }
+
+    /** Turns off passcode protection: removes the passcode salt and any duress code, since
+     * duress has nothing left to gate once there's no passcode screen to type it into. Called
+     * only after the database has already been re-keyed to a device-only key. */
+    @Synchronized
+    fun clearPasscodeAndDuress() {
+        saltFile.delete()
+        duressSaltFile.delete()
+        duressVerifierFile.delete()
+    }
+
+    fun isDisguiseEnabled(): Boolean = !disguiseDisabledFile.exists()
+
+    @Synchronized
+    fun setDisguiseEnabled(enabled: Boolean) {
+        if (enabled) disguiseDisabledFile.delete() else writeAtomically(disguiseDisabledFile, byteArrayOf(1))
     }
 
     @Synchronized
@@ -77,6 +107,7 @@ internal class DatabaseSecretProvider(
         private const val PASSCODE_SALT_FILENAME = "passcode.salt"
         private const val DURESS_SALT_FILENAME = "duress.salt"
         private const val DURESS_VERIFIER_FILENAME = "duress.verifier"
+        private const val DISGUISE_DISABLED_FILENAME = "disguise.off"
         private const val STORAGE_SUBDIR = "niix-secure"
     }
 }

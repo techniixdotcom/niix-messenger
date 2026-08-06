@@ -40,6 +40,18 @@ class AttachmentDao internal constructor(private val secureDatabase: SecureDatab
         db.delete(t.TABLE, "${t.COL_ID} = ?", arrayOf(id))
     }
 
+    fun listForConversation(conversationId: String): List<Attachment> {
+        val items = mutableListOf<Attachment>()
+        db.rawQuery("SELECT * FROM ${t.TABLE} WHERE ${t.COL_CONVERSATION_ID} = ?", arrayOf(conversationId)).use { c ->
+            while (c.moveToNext()) items.add(c.toAttachment())
+        }
+        return items
+    }
+
+    fun deleteForConversation(conversationId: String) {
+        db.delete(t.TABLE, "${t.COL_CONVERSATION_ID} = ?", arrayOf(conversationId))
+    }
+
     private fun android.database.Cursor.toAttachment(): Attachment {
         val digestIdx = getColumnIndexOrThrow(t.COL_DIGEST)
         return Attachment(
