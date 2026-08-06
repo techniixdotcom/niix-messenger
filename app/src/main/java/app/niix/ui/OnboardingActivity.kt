@@ -23,8 +23,13 @@ class OnboardingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
-        if (container.storage.appLock.isPasscodeSet()) {
-            startActivity(Intent(this, CalculatorActivity::class.java))
+        if (container.storage.appLock.isSetUp()) {
+            val destination = if (container.storage.appLock.isDisguiseEnabled()) {
+                CalculatorActivity::class.java
+            } else {
+                PasscodeActivity::class.java
+            }
+            startActivity(Intent(this, destination))
             finish()
             return
         }

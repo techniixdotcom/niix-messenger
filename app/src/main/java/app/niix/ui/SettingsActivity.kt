@@ -1,5 +1,6 @@
 package app.niix.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.widget.CheckBox
@@ -21,14 +22,35 @@ import kotlinx.coroutines.withContext
 
 class SettingsActivity : SecureActivity() {
 
+    private lateinit var requirePasscodeListener: android.widget.CompoundButton.OnCheckedChangeListener
+    private lateinit var disguiseListener: android.widget.CompoundButton.OnCheckedChangeListener
+
     private val pickProfile = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { onProfilePicked(it) }
+        uri?.let {
+            cropLauncher.launch(
+                Intent(this, CropActivity::class.java).putExtra(CropActivity.EXTRA_SOURCE_URI, it.toString()),
+            )
+        }
+    }
+    private val cropLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.getStringExtra(CropActivity.EXTRA_RESULT_PATH)?.let { onProfileCropped(it) }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         findViewById<MaterialToolbar>(R.id.toolbar).setNavigationOnClickListener { finish() }
+
+        findViewById<android.widget.LinearLayout>(R.id.row_profile_photo).setOnClickListener {
+            pickProfile.launch("image/*")
+        }
+        findViewById<android.widget.LinearLayout>(R.id.row_remove_photo).setOnClickListener {
+            removeProfile()
+        }
 
         val allowlist = findViewById<MaterialSwitch>(R.id.switch_allowlist)
         val privacy = findViewById<MaterialSwitch>(R.id.switch_notif_privacy)
@@ -57,11 +79,160 @@ class SettingsActivity : SecureActivity() {
             }
         }
 
-        findViewById<LinearLayout>(R.id.row_profile_photo).setOnClickListener { pickProfile.launch("image/*") }
-        findViewById<LinearLayout>(R.id.row_remove_photo).setOnClickListener { removeProfile() }
+        val requirePasscode = findViewById<MaterialSwitch>(R.id.switch_require_passcode)
+        val disguise = findViewById<MaterialSwitch>(R.id.switch_disguise)
+
+        requirePasscodeListener = android.widget.CompoundButton.OnCheckedChangeListener { _, checked ->
+            if (checked) {
+                enablePasscodeDialog(requirePasscode, disguise)
+            } else if (disguise.isChecked) {
+                confirmDisableBoth(requirePasscode, disguise)
+            } else {
+                confirmDisablePasscode(requirePasscode)
+            }
+        }
+        disguiseListener = android.widget.CompoundButton.OnCheckedChangeListener { _, checked ->
+            if (checked) {
+                if (!container.storage.appLock.isPasscodeEnabled()) {
+                    setSwitchChecked(disguise, false, disguiseListener)
+                    AlertDialog.Builder(this)
+                        .setMessage(R.string.warn_enable_disguise_needs_passcode)
+                        .setPositiveButton(R.string.dialog_ok, null)
+                        .show()
+                } else {
+                    container.storage.appLock.setDisguiseEnabled(true)
+                    app.niix.LauncherAlias.apply(this, true)
+                    toast(getString(R.string.toast_disguise_on))
+                }
+            } else {
+                confirmDisableDisguise(disguise)
+            }
+        }
+
+        setSwitchChecked(requirePasscode, container.storage.appLock.isPasscodeEnabled(), requirePasscodeListener)
+        setSwitchChecked(disguise, container.storage.appLock.isDisguiseEnabled(), disguiseListener)
+
         findViewById<LinearLayout>(R.id.row_duress).setOnClickListener { duressDialog() }
+        findViewById<LinearLayout>(R.id.row_wipe_now).setOnClickListener { wipeNowDialog() }
         findViewById<LinearLayout>(R.id.row_export).setOnClickListener { backupDialog(true) }
         findViewById<LinearLayout>(R.id.row_import).setOnClickListener { backupDialog(false) }
+    }
+
+    /** Detaches, changes, and reattaches so a programmatic state change never re-fires the
+     * listener (e.g. reverting a toggle after a failed or cancelled change). */
+    private fun setSwitchChecked(switch: MaterialSwitch, checked: Boolean, listener: android.widget.CompoundButton.OnCheckedChangeListener) {
+        switch.setOnCheckedChangeListener(null)
+        switch.isChecked = checked
+        switch.setOnCheckedChangeListener(listener)
+    }
+
+    private fun confirmDisablePasscode(requirePasscode: MaterialSwitch) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.warn_disable_passcode_title)
+            .setMessage(R.string.warn_disable_passcode_body)
+            .setPositiveButton(R.string.warn_disable_passcode_confirm) { _, _ -> disablePasscodeNow(requirePasscode) }
+            .setNegativeButton(R.string.dialog_cancel) { _, _ -> setSwitchChecked(requirePasscode, true, requirePasscodeListener) }
+            .setOnCancelListener { setSwitchChecked(requirePasscode, true, requirePasscodeListener) }
+            .show()
+    }
+
+    private fun confirmDisableDisguise(disguise: MaterialSwitch) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.warn_disable_disguise_title)
+            .setMessage(R.string.warn_disable_disguise_body)
+            .setPositiveButton(R.string.warn_disable_disguise_confirm) { _, _ ->
+                container.storage.appLock.setDisguiseEnabled(false)
+                app.niix.LauncherAlias.apply(this, false)
+                toast(getString(R.string.toast_disguise_off))
+            }
+            .setNegativeButton(R.string.dialog_cancel) { _, _ -> setSwitchChecked(disguise, true, disguiseListener) }
+            .setOnCancelListener { setSwitchChecked(disguise, true, disguiseListener) }
+            .show()
+    }
+
+    private fun confirmDisableBoth(requirePasscode: MaterialSwitch, disguise: MaterialSwitch) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.warn_disable_both_title)
+            .setMessage(R.string.warn_disable_both_body)
+            .setPositiveButton(R.string.warn_disable_both_confirm) { _, _ ->
+                disablePasscodeNow(requirePasscode, alsoDisguise = disguise)
+            }
+            .setNegativeButton(R.string.dialog_cancel) { _, _ -> setSwitchChecked(requirePasscode, true, requirePasscodeListener) }
+            .setOnCancelListener { setSwitchChecked(requirePasscode, true, requirePasscodeListener) }
+            .show()
+    }
+
+    private fun disablePasscodeNow(requirePasscode: MaterialSwitch, alsoDisguise: MaterialSwitch? = null) {
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) { container.storage.appLock.disablePasscode() }
+            if (ok) {
+                CalculatorMemory.clear(this@SettingsActivity)
+                if (alsoDisguise != null) {
+                    container.storage.appLock.setDisguiseEnabled(false)
+                    app.niix.LauncherAlias.apply(this@SettingsActivity, false)
+                    setSwitchChecked(alsoDisguise, false, disguiseListener)
+                }
+                toast(getString(R.string.toast_passcode_disabled))
+            } else {
+                setSwitchChecked(requirePasscode, true, requirePasscodeListener)
+                toast(getString(R.string.toast_change_failed))
+            }
+        }
+    }
+
+    private fun enablePasscodeDialog(requirePasscode: MaterialSwitch, disguise: MaterialSwitch) {
+        val field = passwordField()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.enable_passcode_title)
+            .setMessage(getString(R.string.hint_new_passcode))
+            .setView(pad(field))
+            .setPositiveButton(R.string.dialog_ok) { _, _ ->
+                val chars = CharArray(field.text.length) { field.text[it] }
+                if (chars.size < 6) {
+                    chars.fill('\u0000')
+                    toast(getString(R.string.lock_too_short, 6))
+                    setSwitchChecked(requirePasscode, false, requirePasscodeListener)
+                    return@setPositiveButton
+                }
+                lifecycleScope.launch {
+                    val ok = withContext(Dispatchers.Default) {
+                        try { container.storage.appLock.enablePasscode(chars) } finally { chars.fill('\u0000') }
+                    }
+                    if (ok) {
+                        toast(getString(R.string.toast_passcode_enabled))
+                    } else {
+                        setSwitchChecked(requirePasscode, false, requirePasscodeListener)
+                        toast(getString(R.string.toast_change_failed))
+                    }
+                }
+            }
+            .setNegativeButton(R.string.dialog_cancel) { _, _ -> setSwitchChecked(requirePasscode, false, requirePasscodeListener) }
+            .setOnCancelListener { setSwitchChecked(requirePasscode, false, requirePasscodeListener) }
+            .show()
+    }
+
+    private fun wipeNowDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.wipe_now_title)
+            .setMessage(R.string.wipe_now_body)
+            .setPositiveButton(R.string.wipe_now_confirm) { _, _ ->
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        runCatching { container.storage.wipeAllData() }
+                        CalculatorMemory.clear(this@SettingsActivity)
+                    }
+                    app.niix.LauncherAlias.apply(this@SettingsActivity, container.storage.appLock.isDisguiseEnabled())
+                    toast(getString(R.string.wipe_now_done))
+                    startActivity(
+                        Intent(
+                            this@SettingsActivity,
+                            if (container.storage.appLock.isDisguiseEnabled()) CalculatorActivity::class.java else PasscodeActivity::class.java,
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
+                    )
+                }
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     private fun duressDialog() {
@@ -149,10 +320,13 @@ class SettingsActivity : SecureActivity() {
 
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
-    private fun onProfilePicked(uri: android.net.Uri) {
+    private fun onProfileCropped(path: String) {
+        val file = java.io.File(path)
         lifecycleScope.launch {
             val ok = withContext(Dispatchers.IO) {
-                val bytes = ImageUtil.processProfile(this@SettingsActivity, uri) ?: return@withContext false
+                val bytes = runCatching { file.readBytes() }.getOrNull()
+                file.delete()
+                if (bytes == null) return@withContext false
                 runCatching { container.conversations.setSelfProfile(bytes) }.isSuccess
             }
             Toast.makeText(this@SettingsActivity, getString(if (ok) R.string.toast_profile_updated else R.string.toast_failed, ""), Toast.LENGTH_SHORT).show()

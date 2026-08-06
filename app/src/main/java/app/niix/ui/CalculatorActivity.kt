@@ -12,10 +12,8 @@ import app.niix.CalculatorMemory
 import app.niix.NiixApp
 import app.niix.R
 import app.niix.TempFileGuard
-import app.niix.core.storage.UnlockResult
-import kotlinx.coroutines.Dispatchers
+import app.niix.UnlockFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class CalculatorActivity : AppCompatActivity() {
 
@@ -100,7 +98,7 @@ class CalculatorActivity : AppCompatActivity() {
         if (result != "Error") expr.append(result)
         justEvaluated = true
 
-        if (!container.storage.appLock.isPasscodeSet()) {
+        if (!container.storage.appLock.isSetUp()) {
             // Not registered (fresh install or after a wipe): only the registration
             // trigger code opens setup. Everything else is just arithmetic.
             if (raw == REGISTRATION_CODE) {
@@ -114,43 +112,12 @@ class CalculatorActivity : AppCompatActivity() {
 
     private fun tryUnlock(raw: String) {
         lifecycleScope.launch {
-            val outcome = withContext(Dispatchers.Default) {
-                val pass = raw.toCharArray()
-                try {
-                    // Force a real verification: never trust an already-open database.
-                    container.storage.appLock.lock()
-                    val result = container.storage.appLock.unlock(pass)
-                    if (result == UnlockResult.DURESS) {
-                        // Panic wipe: destroy everything, then rebuild a decoy identity keyed by
-                        // the same code just entered, seeded with plausible fake conversations,
-                        // and open into it -- so a coerced unlock looks like it genuinely worked.
-                        container.storage.wipeAllData()
-                        runCatching {
-                            container.storage.appLock.setPasscode(pass)
-                            container.crypto.ensureKeysInitialized()
-                            container.conversations.seedDecoyContent()
-                        }
-                    }
-                    if (result == UnlockResult.DURESS && !container.storage.appLock.isUnlocked()) {
-                        // Decoy setup didn't complete; fall back to staying a silent calculator
-                        // rather than opening onto a broken/empty screen.
-                        UnlockResult.FAILED
-                    } else {
-                        result
-                    }
-                } finally {
-                    pass.fill('\u0000')
-                }
-            }
-            when (outcome) {
-                UnlockResult.SUCCESS, UnlockResult.DURESS -> {
-                    container.lock.reset()
-                    expr.clear()
-                    render()
-                    startActivity(Intent(this@CalculatorActivity, HomeActivity::class.java))
-                    finish()
-                }
-                UnlockResult.FAILED -> Unit // stay a calculator
+            val opened = UnlockFlow.attempt(container, raw)
+            if (opened) {
+                expr.clear()
+                render()
+                startActivity(Intent(this@CalculatorActivity, HomeActivity::class.java))
+                finish()
             }
         }
     }

@@ -9,9 +9,9 @@ A serverless, peer-to-peer messenger for Android. No accounts, no phone number, 
 - **No servers.** There is no NiiX server anywhere. Your phone runs its own Tor onion service, and your contacts connect to it directly. No company operates infrastructure that could log who talks to whom, store your messages, or be compelled to hand them over — because it does not exist.
 - **Post-quantum end-to-end encryption.** Messages use Signal's libsignal (PQXDH: X25519 + Kyber), so they stay protected even against a future quantum computer that recorded today's traffic.
 - **Everything over Tor.** All traffic is routed through Tor. Neither you nor your contact learns the other's IP address, and the connection is hidden from your network provider.
-- **Encrypted at rest.** Your messages and keys live in a SQLCipher database encrypted with a key derived from your passcode. Without your passcode, the data on disk is unreadable.
-- **Calculator disguise.** The app looks and behaves like a real calculator. Your actual messenger opens only when you type your passcode and press `=`.
-- **Duress passcode.** An optional second passcode that silently wipes everything and leaves the calculator on screen, so a coerced "unlock" reveals nothing.
+- **Encrypted at rest.** Your messages and keys live in a SQLCipher database. By default the encryption key is derived from your passcode; without it, the data on disk is unreadable. If you turn passcode protection off (Settings > Security), the database is still encrypted, but by a key tied to your phone's hardware alone — as strong as your phone's own screen lock, not by anything only you know.
+- **Calculator disguise (on by default).** The app looks and behaves like a real calculator. Your actual messenger opens only when you type your passcode and press `=`. This can be turned off in Settings if you'd rather NiiX show its real icon and name; doing so requires a passcode to still be enabled, since a disguise with nothing behind it can't hide anything.
+- **Duress passcode.** An optional second passcode that wipes everything and opens into a fresh account seeded with plausible, harmless conversations, so a coerced unlock looks like it worked normally rather than obviously failing. Only available while passcode protection is on — Settings also has a manual "Wipe all data now" button for when it's off.
 
 ## Identity and adding contacts
 
@@ -37,7 +37,8 @@ NiiX has no servers by design. That gives strong privacy, but it comes with real
 2. On first launch, type the registration code (`1+6+1`, then `=`) to begin setup. Choose a username and a passcode of at least 6 digits, and optionally a duress passcode.
 3. After setup, the app is just a calculator. Type your passcode and press `=` to open the real app.
 4. Share your code from the menu → **My code**, and add contacts by scanning their QR or pasting their code.
-5. Entering a wrong code simply performs the calculation. Entering your **duress** code silently wipes everything and stays on the calculator.
+5. Entering a wrong code simply performs the calculation. Entering your **duress** code wipes everything and opens into a fresh, harmless-looking account, so it looks like it worked.
+6. Settings → **Security** lets you turn passcode protection and the calculator disguise off individually if you'd rather NiiX behave like an ordinary app — both are on by default, and turning either off shows a full explanation of what you're giving up before it takes effect.
 
 ## Security at a glance
 
@@ -50,14 +51,28 @@ NiiX has no servers by design. That gives strong privacy, but it comes with real
 
 ## Building
 
-The repository includes a self-contained build script that downloads its own JDK, Gradle and Android SDK into a local folder (no system installation required):
+The repository includes a self-contained build script that downloads its own JDK, Gradle and Android SDK into a local folder (no system installation required).
+
+**Signing a release build.** A release APK must be signed with your own key, which only you should ever hold:
 
 ```
-./build-niix.sh                 # build a debug APK
+keytool -genkeypair -v -storetype PKCS12 \
+  -keystore niix-release.jks -alias niix \
+  -keyalg RSA -keysize 4096 -validity 10000
+cp keystore.properties.example keystore.properties   # then edit in your passwords
+```
+
+Back up `niix-release.jks` somewhere safe outside this folder — losing it means you can never sign an update as "the same app" again. Never commit `niix-release.jks` or `keystore.properties`; both are already git-ignored.
+
+```
+./build-niix.sh                 # signed release APK (needs keystore.properties, above)
+./build-niix.sh --debug         # unsigned debug APK instead, for quick local testing
 ./build-niix.sh --update        # bump all dependencies to the newest stable versions, then build
 ```
 
 You can also build with a standard Android/Gradle setup (Kotlin, `minSdk 26`, `compileSdk 35`).
+
+**Note on code shrinking:** the release build type has R8 shrinking (`isMinifyEnabled`) turned off deliberately. This app leans on libsignal, SQLCipher, and kmp-tor, all of which use JNI or reflection in ways R8 can silently strip without a build error — the failure only shows up later, on a real device, often as something as consequential as Tor never starting. `proguard-rules.pro` already has keep rules for all three so shrinking can be tried safely later, but that's worth doing as its own deliberate, tested step, not bundled into every build.
 
 ## Notes for packagers (F-Droid)
 

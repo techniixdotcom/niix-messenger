@@ -59,4 +59,27 @@
             android:paddingHorizontal="8dp"
             android:paddingTop="4dp" />
     </ScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/niix_divider" />
+
+    <LinearLayout
+        android:id="@+id/row_leave_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:padding="16dp">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView style="@style/SettingsRowTitle" android:text="@string/group_leave" android:textColor="@color/niix_danger" />
+            <TextView style="@style/SettingsRowDesc" android:text="@string/group_leave_desc" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

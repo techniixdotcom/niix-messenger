@@ -3,6 +3,8 @@ package app.niix.ui
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -76,45 +78,14 @@ class ChatActivity : SecureActivity() {
         list.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
         list.adapter = adapter
 
-        val input = findViewById<TextView>(R.id.input)
+        val input = findViewById<EditText>(R.id.input)
         val keyboardPanel = findViewById<LinearLayout>(R.id.keyboard_panel)
-        val composerText = StringBuilder()
-
-        fun refreshComposer() {
-            if (composerText.isEmpty()) {
-                input.text = getString(R.string.chat_hint)
-                input.setTextColor(resources.getColor(R.color.niix_on_surface_muted, theme))
-            } else {
-                input.text = composerText.toString()
-                input.setTextColor(resources.getColor(R.color.niix_on_surface, theme))
-            }
-        }
-        refreshComposer()
-
-        val keyboard = NiixKeyboard(
-            context = this,
-            container = keyboardPanel,
-            onKey = { key -> composerText.append(key); refreshComposer() },
-            onBackspace = {
-                if (composerText.isNotEmpty()) {
-                    composerText.deleteCharAt(composerText.length - 1)
-                    refreshComposer()
-                }
-            },
-            onDone = { keyboardPanel.visibility = android.view.View.GONE },
-        )
-        keyboard.render()
-
-        input.setOnClickListener {
-            keyboardPanel.visibility =
-                if (keyboardPanel.visibility == android.view.View.VISIBLE) android.view.View.GONE else android.view.View.VISIBLE
-        }
+        NiixKeyboardController(this, keyboardPanel).attach(input)
 
         findViewById<ImageButton>(R.id.send).setOnClickListener {
-            val text = composerText.toString().trim()
+            val text = input.text.toString().trim()
             if (text.isNotEmpty()) {
-                composerText.clear()
-                refreshComposer()
+                input.text.clear()
                 send(text)
             }
         }
@@ -129,6 +100,46 @@ class ChatActivity : SecureActivity() {
         lifecycleScope.launch {
             container.conversations.changes.collect { load() }
         }
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        edgeSwipeDetector.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
+    }
+
+    /**
+     * Lets a swipe starting from the very left edge of the screen close the chat and return to
+     * the contacts list, in addition to the toolbar back arrow -- without this, on devices using
+     * classic 3-button navigation (no system back gesture) there was no swipe-based way back.
+     */
+    private val edgeSwipeDetector by lazy {
+        val edgeZonePx = dp(24)
+        val minTravelPx = dp(80)
+        val minVelocityPx = dp(400)
+        android.view.GestureDetector(
+            this,
+            object : android.view.GestureDetector.SimpleOnGestureListener() {
+                override fun onFling(
+                    e1: android.view.MotionEvent?,
+                    e2: android.view.MotionEvent,
+                    velocityX: Float,
+                    velocityY: Float,
+                ): Boolean {
+                    val start = e1 ?: return false
+                    val dx = e2.x - start.x
+                    val dy = e2.y - start.y
+                    val startedAtLeftEdge = start.x <= edgeZonePx
+                    val swipedRightFarEnough = dx > minTravelPx
+                    val mostlyHorizontal = kotlin.math.abs(dy) < minTravelPx
+                    val fastEnough = kotlin.math.abs(velocityX) > minVelocityPx
+                    if (startedAtLeftEdge && swipedRightFarEnough && mostlyHorizontal && fastEnough) {
+                        finish()
+                        return true
+                    }
+                    return false
+                }
+            },
+        )
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
@@ -280,31 +291,64 @@ class ChatActivity : SecureActivity() {
 
     private fun renameDialog() {
         val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
-        val field = NiixTextEntry(this, getString(R.string.menu_rename)).apply {
-            text = toolbar.title?.toString().orEmpty()
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+
+        val field = NiixEditField.create(this, getString(R.string.hint_contact_name)).apply {
+            setText(toolbar.title?.toString().orEmpty())
+            setSelection(text.length)
         }
-        val dialogView = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 8)
-            addView(field)
+        val keyboardPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(resources.getColor(R.color.niix_surface, theme))
+            setPadding(dp(4), dp(6), dp(4), dp(10))
         }
-        AlertDialog.Builder(this)
-            .setTitle(R.string.menu_rename)
-            .setView(dialogView)
-            .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                val newName = field.text.trim()
-                if (newName.isNotEmpty()) {
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.IO) {
-                            runCatching { container.conversations.renameContact(conversationId, newName) }
-                        }
-                        toolbar.title = newName
+        val saveButton = com.google.android.material.button.MaterialButton(this).apply {
+            text = getString(R.string.dialog_save)
+        }
+
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(resources.getColor(R.color.niix_surface, theme))
+            setPadding(dp(20), dp(20), dp(20), dp(10))
+            addView(
+                TextView(this@ChatActivity).apply {
+                    text = getString(R.string.menu_rename)
+                    setTextColor(resources.getColor(R.color.niix_on_surface, theme))
+                    textSize = 17f
+                    setPadding(0, 0, 0, dp(14))
+                },
+            )
+            addView(field, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(
+                saveButton,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).also {
+                    it.topMargin = dp(14)
+                },
+            )
+            addView(keyboardPanel)
+        }
+
+        NiixKeyboardController(this, keyboardPanel).attach(field)
+
+        saveButton.setOnClickListener {
+            val newName = field.text.toString().trim()
+            if (newName.isNotEmpty()) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        runCatching { container.conversations.renameContact(conversationId, newName) }
                     }
+                    toolbar.title = newName
                 }
             }
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .show()
+            sheet.dismiss()
+        }
+
+        sheet.setContentView(content)
+        sheet.show()
+        field.requestFocus()
     }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun showSafetyNumber() {
         lifecycleScope.launch {

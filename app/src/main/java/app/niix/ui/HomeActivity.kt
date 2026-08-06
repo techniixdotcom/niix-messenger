@@ -8,7 +8,11 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +32,10 @@ class HomeActivity : SecureActivity() {
     private lateinit var groupsEmpty: View
     private lateinit var contactsEmpty: View
 
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var drawerContactAdapter: ConversationAdapter
+    private lateinit var drawerContactsEmpty: View
+
     private var allGroups: List<ConversationRow> = emptyList()
     private var allContacts: List<ConversationRow> = emptyList()
     private var query: String = ""
@@ -40,8 +48,44 @@ class HomeActivity : SecureActivity() {
         groupsEmpty = findViewById(R.id.groups_empty)
         contactsEmpty = findViewById(R.id.contacts_empty)
 
-        groupAdapter = ConversationAdapter(onClick = { row -> openChat(row.id, row.title) }, loadAvatar = { tv, id -> applyAvatar(tv, id) })
-        contactAdapter = ConversationAdapter(onClick = { row -> openChat(row.id, row.title) }, loadAvatar = { tv, id -> applyAvatar(tv, id) })
+        drawerLayout = findViewById(R.id.drawer_layout)
+        drawerContactsEmpty = findViewById(R.id.drawer_contacts_empty)
+        drawerContactAdapter = ConversationAdapter(
+            onClick = { row -> openContactFromDrawer(row.id) },
+            loadAvatar = { tv, id -> applyAvatar(tv, id) },
+        )
+        findViewById<RecyclerView>(R.id.drawer_contact_list).apply {
+            layoutManager = LinearLayoutManager(this@HomeActivity)
+            adapter = drawerContactAdapter
+            isNestedScrollingEnabled = false
+        }
+        drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerOpened(drawerView: View) = loadDrawerContacts()
+        })
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    return
+                }
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+                isEnabled = true
+            }
+        })
+
+        groupAdapter = ConversationAdapter(
+            onClick = { row -> openChat(row.id, row.title) },
+            loadAvatar = { tv, id -> applyAvatar(tv, id) },
+            onLongClick = { row -> confirmDeleteConversation(row, isGroup = true) },
+            onAvatarClick = { id -> enlargeAvatar(id) },
+        )
+        contactAdapter = ConversationAdapter(
+            onClick = { row -> openChat(row.id, row.title) },
+            loadAvatar = { tv, id -> applyAvatar(tv, id) },
+            onLongClick = { row -> confirmDeleteConversation(row, isGroup = false) },
+            onAvatarClick = { id -> enlargeAvatar(id) },
+        )
         findViewById<RecyclerView>(R.id.group_list).apply {
             layoutManager = LinearLayoutManager(this@HomeActivity)
             adapter = groupAdapter
@@ -57,6 +101,7 @@ class HomeActivity : SecureActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
         val search = findViewById<EditText>(R.id.search_field)
+        NiixKeyboardController(this, findViewById<LinearLayout>(R.id.keyboard_panel)).attach(search)
         findViewById<ImageView>(R.id.btn_search).setOnClickListener { search.requestFocus() }
         search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -153,15 +198,25 @@ class HomeActivity : SecureActivity() {
     private fun applyFilter() {
         lifecycleScope.launch {
             val q = query
-            val msgMatches = if (q.isEmpty()) emptySet() else
-                container.conversations.searchMessageConversationIds(q).toSet()
-            val groups = if (q.isEmpty()) allGroups else allGroups.filter { it.title.contains(q, true) || it.id in msgMatches }
-            val contacts = if (q.isEmpty()) allContacts else allContacts.filter { it.title.contains(q, true) || it.id in msgMatches }
+            val msgMatches = if (q.isEmpty()) emptyMap() else container.conversations.searchMessageMatches(q)
+            val groups = if (q.isEmpty()) allGroups else allGroups.mapNotNull { withSearchMatch(it, q, msgMatches) }
+            val contacts = if (q.isEmpty()) allContacts else allContacts.mapNotNull { withSearchMatch(it, q, msgMatches) }
             groupAdapter.submit(groups)
             contactAdapter.submit(contacts)
             groupsEmpty.visibility = if (groups.isEmpty()) View.VISIBLE else View.GONE
             contactsEmpty.visibility = if (contacts.isEmpty()) View.VISIBLE else View.GONE
         }
+    }
+
+    /**
+     * Returns [row] unchanged if its title matches [query]; returns it with its preview swapped
+     * for the matching message line if only its message content matches; returns null if neither
+     * matches (so it's filtered out of the search results).
+     */
+    private fun withSearchMatch(row: ConversationRow, query: String, msgMatches: Map<String, String>): ConversationRow? {
+        if (row.title.contains(query, ignoreCase = true)) return row
+        val matchedBody = msgMatches[row.id] ?: return null
+        return row.copy(preview = getString(R.string.search_message_match_prefix, matchedBody))
     }
 
     private fun previewOf(m: Message): String = when {
@@ -176,6 +231,78 @@ class HomeActivity : SecureActivity() {
                 .putExtra(ChatActivity.EXTRA_ID, id)
                 .putExtra(ChatActivity.EXTRA_TITLE, title),
         )
+    }
+
+    /** Loads every saved contact into the left-edge drawer, including ones whose conversation
+     * was deleted -- they stay in your contacts and can be messaged again from here. */
+    private fun loadDrawerContacts() {
+        lifecycleScope.launch {
+            val rows = withContext(Dispatchers.IO) {
+                container.conversations.listContacts().map { c ->
+                    ConversationRow(
+                        id = c.onionAddress.value,
+                        title = c.displayName,
+                        preview = c.onionAddress.value,
+                        time = c.addedAtEpochMillis,
+                    )
+                }
+            }.sortedBy { it.title.lowercase() }
+            drawerContactAdapter.submit(rows)
+            drawerContactsEmpty.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
+        }
+    }
+
+    /** Opens a chat with a contact picked from the drawer, recreating the conversation first
+     * if it was previously deleted -- no re-adding or re-exchanging keys is needed. */
+    private fun openContactFromDrawer(onion: String) {
+        drawerLayout.closeDrawer(GravityCompat.START)
+        lifecycleScope.launch {
+            val conversation = withContext(Dispatchers.IO) {
+                container.conversations.ensureConversationForContact(onion)
+            }
+            openChat(conversation.id, conversation.title)
+        }
+    }
+
+    /** Shows a contact's or group's profile photo full-screen when its avatar is tapped. */
+    private fun enlargeAvatar(key: String) {
+        lifecycleScope.launch {
+            val bitmap = avatarCache[key] ?: run {
+                val bytes = withContext(Dispatchers.IO) { container.conversations.profileBytes(key) } ?: return@launch
+                withContext(Dispatchers.Default) { android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }
+            } ?: return@launch
+            val file = withContext(Dispatchers.IO) {
+                val target = java.io.File(cacheDir, "open_avatar_${System.currentTimeMillis()}.jpg")
+                runCatching {
+                    java.io.FileOutputStream(target).use { out -> bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out) }
+                }
+                target
+            }
+            startActivity(
+                Intent(this@HomeActivity, MediaViewerActivity::class.java)
+                    .putExtra(MediaViewerActivity.EXTRA_PATH, file.absolutePath)
+                    .putExtra(MediaViewerActivity.EXTRA_MIME, "image/jpeg"),
+            )
+        }
+    }
+
+    private fun confirmDeleteConversation(row: ConversationRow, isGroup: Boolean) {
+        val message = if (isGroup) {
+            getString(R.string.delete_conversation_group_message)
+        } else {
+            getString(R.string.delete_conversation_message, row.title)
+        }
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.delete_conversation_title)
+            .setMessage(message)
+            .setPositiveButton(R.string.action_delete) { _, _ ->
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { container.conversations.deleteConversation(row.id) }
+                    load()
+                }
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     private fun requestBatteryExemptionOnce() {

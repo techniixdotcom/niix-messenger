@@ -110,9 +110,11 @@ Tap + to add a contact.</string>
     <string name="setting_export_desc">Save an encrypted copy of your messages and keys.</string>
     <string name="setting_import_desc">Restore your data from an encrypted backup.</string>
     <string name="action_search">Search</string>
-    <string name="search_hint">// find in contacts...</string>
+    <string name="search_hint">// find in contacts or messages...</string>
+    <string name="search_message_match_prefix">"%1$s"</string>
     <string name="section_groups">◆ GROUPS</string>
     <string name="section_contacts">◆ CONTACTS</string>
+    <string name="nav_contacts_title">◆ ALL CONTACTS</string>
     <string name="groups_empty">// no groups yet
 tap + to create</string>
     <string name="contacts_empty">// no contacts yet
@@ -130,6 +132,7 @@ tap + to add</string>
     <string name="create_group_need_name">Enter a group name</string>
     <string name="create_group_need_members">Select at least one member</string>
     <string name="create_group_done">Group created</string>
+    <string name="create_group_creating">Creating…</string>
     <string name="setting_screenshots">Allow screenshots</string>
     <string name="setting_screenshots_desc">When off, screenshots and screen recording are blocked inside the app.</string>
     <string name="attach">Attach</string>
@@ -159,8 +162,58 @@ tap + to add</string>
     <string name="group_remove">Remove from group</string>
     <string name="group_not_admin">Only group admins can do that</string>
     <string name="group_no_candidates">No more contacts to add</string>
+    <string name="group_leave">Leave group</string>
+    <string name="group_leave_desc">Remove this group and its messages from this device</string>
+    <string name="leave_group_title">Leave group?</string>
+    <string name="leave_group_message">You\'ll stop receiving messages from this group, and it will be removed from this device. Other members keep their copy.</string>
+    <string name="leave_group_confirm">Leave</string>
+    <string name="toast_left_group">Left the group</string>
     <string name="perm_camera_needed">Camera permission is needed to take a photo</string>
     <string name="keyboard_space">space</string>
     <string name="action_paste">Paste</string>
     <string name="setting_store_duress_memory">Also save it in the calculator\'s memory (recall with MR)</string>
+    <string name="crop_title">Crop photo</string>
+    <string name="crop_load_failed">Couldn\'t load that image</string>
+    <string name="action_use_photo">Use photo</string>
+    <string name="action_delete">Delete</string>
+    <string name="delete_conversation_title">Delete conversation?</string>
+    <string name="delete_conversation_message">This removes the conversation and its messages from this device. %1$s stays in your contacts, and you can message them again anytime.</string>
+    <string name="delete_conversation_group_message">This removes the group and its messages from this device. Your contacts are not affected.</string>
+    <string name="passcode_prompt">Enter your passcode</string>
+    <string name="passcode_placeholder">–</string>
+    <string name="passcode_too_short">Enter at least 6 digits</string>
+    <string name="passcode_incorrect">Incorrect passcode</string>
+    <string name="setting_require_passcode">Require a passcode</string>
+    <string name="setting_require_passcode_desc">Without this, anyone who can unlock your phone can open NiiX directly.</string>
+    <string name="setting_disguise">Disguise as calculator</string>
+    <string name="setting_disguise_desc">Shows a working calculator instead of NiiX\'s real icon and name.</string>
+    <string name="setting_wipe_now">Wipe all data now</string>
+    <string name="setting_wipe_now_desc">Immediately and permanently erases everything on this device.</string>
+    <string name="warn_disable_passcode_title">Turn off passcode protection?</string>
+    <string name="warn_disable_passcode_body">Without a passcode, anyone who can unlock your phone — with their fingerprint, face, or screen lock — can open NiiX directly and read your messages. Your data stays encrypted, but only as strongly as your phone\'s own lock screen, not by anything only you know.
+
+Your duress code will stop working, since there\'s no passcode screen left to enter it into. You can wipe your data manually from Settings instead.</string>
+    <string name="warn_disable_passcode_confirm">Turn Off Passcode</string>
+    <string name="warn_disable_disguise_title">Turn off the calculator disguise?</string>
+    <string name="warn_disable_disguise_body">NiiX will show its real icon and name everywhere — your app list, recent apps, and notifications. Anyone looking at your phone will be able to see this app exists and guess what it\'s for, even though they still can\'t open it without your passcode.
+
+The icon change may take a moment to appear on your home screen — some launchers don\'t redraw it instantly, even though the change takes effect right away.</string>
+    <string name="warn_disable_disguise_confirm">Turn Off Disguise</string>
+    <string name="warn_disable_both_title">Turn off passcode — and the calculator disguise with it?</string>
+    <string name="warn_disable_both_body">A calculator with nothing behind it can\'t hide anything, so turning off your passcode turns off the disguise too. NiiX will show its real icon and name, and anyone who can unlock your phone can open it directly and read your messages. Your duress code will stop working.
+
+The icon change may take a moment to appear on your home screen — some launchers don\'t redraw it instantly, even though the change takes effect right away.</string>
+    <string name="warn_disable_both_confirm">Turn Off Both</string>
+    <string name="warn_enable_disguise_needs_passcode">The calculator disguise needs a passcode to mean anything — turn on \'Require a passcode\' first.</string>
+    <string name="wipe_now_title">Wipe all data now?</string>
+    <string name="wipe_now_body">This immediately and permanently deletes all messages, contacts, and keys on this device. This cannot be undone.</string>
+    <string name="wipe_now_confirm">Wipe Everything</string>
+    <string name="wipe_now_done">All data wiped.</string>
+    <string name="toast_passcode_disabled">Passcode turned off</string>
+    <string name="toast_passcode_enabled">Passcode turned on</string>
+    <string name="toast_disguise_off">Disguise turned off</string>
+    <string name="toast_disguise_on">Disguise turned on</string>
+    <string name="toast_change_failed">Couldn\'t change this setting. Nothing was changed — try again.</string>
+    <string name="hint_new_passcode">New passcode (6+ digits)</string>
+    <string name="enable_passcode_title">Set a passcode</string>
 </resources>

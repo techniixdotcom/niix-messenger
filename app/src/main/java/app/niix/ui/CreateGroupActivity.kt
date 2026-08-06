@@ -3,6 +3,7 @@ package app.niix.ui
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -21,15 +22,21 @@ class CreateGroupActivity : SecureActivity() {
     private data class ContactEntry(val onion: String, val title: String)
 
     private val boxes = mutableListOf<CheckBox>()
-    private lateinit var groupNameEntry: NiixTextEntry
+    private lateinit var groupNameField: EditText
+    private lateinit var createButton: MaterialButton
+    private var creating = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_group)
         findViewById<MaterialToolbar>(R.id.toolbar).setNavigationOnClickListener { finish() }
-        findViewById<MaterialButton>(R.id.create_button).setOnClickListener { create() }
-        groupNameEntry = NiixTextEntry(this, getString(R.string.hint_group_name))
-        findViewById<FrameLayout>(R.id.group_name_container).addView(groupNameEntry)
+        createButton = findViewById<MaterialButton>(R.id.create_button).apply { setOnClickListener { create() } }
+        groupNameField = NiixEditField.create(this, getString(R.string.hint_group_name))
+        findViewById<FrameLayout>(R.id.group_name_container).addView(
+            groupNameField,
+            FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT),
+        )
+        NiixKeyboardController(this, findViewById<LinearLayout>(R.id.keyboard_panel)).attach(groupNameField)
         loadContacts()
     }
 
@@ -66,7 +73,12 @@ class CreateGroupActivity : SecureActivity() {
     }
 
     private fun create() {
-        val name = groupNameEntry.text.trim()
+        // Group creation reaches out to every member over Tor before it returns, which can take
+        // a few seconds. Without this guard, tapping "Create group" more than once while that's
+        // in flight (the button gave no feedback that anything was happening) fired a separate
+        // createGroup() call per tap, silently creating several duplicate groups.
+        if (creating) return
+        val name = groupNameField.text.toString().trim()
         if (name.isEmpty()) {
             Toast.makeText(this, getString(R.string.create_group_need_name), Toast.LENGTH_SHORT).show()
             return
@@ -76,6 +88,9 @@ class CreateGroupActivity : SecureActivity() {
             Toast.makeText(this, getString(R.string.create_group_need_members), Toast.LENGTH_SHORT).show()
             return
         }
+        creating = true
+        createButton.isEnabled = false
+        createButton.text = getString(R.string.create_group_creating)
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching { container.conversations.createGroup(name, members) }
@@ -84,6 +99,9 @@ class CreateGroupActivity : SecureActivity() {
                 Toast.makeText(this@CreateGroupActivity, getString(R.string.create_group_done), Toast.LENGTH_SHORT).show()
                 finish()
             } else {
+                creating = false
+                createButton.isEnabled = true
+                createButton.text = getString(R.string.action_create_group)
                 Toast.makeText(this@CreateGroupActivity, getString(R.string.toast_failed, result.exceptionOrNull()?.message ?: ""), Toast.LENGTH_SHORT).show()
             }
         }

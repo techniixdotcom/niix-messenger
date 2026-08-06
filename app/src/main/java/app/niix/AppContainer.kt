@@ -17,6 +17,7 @@ import kotlinx.coroutines.SupervisorJob
 class AppContainer(context: Context) {
 
     private val appContext: Context = context.applicationContext
+    val context: Context get() = appContext
 
     @Volatile
     var selfOnion: String? = null

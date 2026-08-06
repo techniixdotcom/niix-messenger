@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 #
-# Builds the NiiX debug APK on Linux with a self-contained toolchain.
+# Builds a signed NiiX release APK on Linux with a self-contained toolchain.
 # Installs JDK 17 (Temurin), Gradle 8.11.1, and the Android SDK (platform 35,
 # build-tools 35.0.0) into <project>/.toolchain — no sudo, no system changes.
 #
+# A release build needs your own signing keystore first -- see keystore.properties.example
+# for how to generate one. Without it, this script tells you what's missing and stops
+# rather than producing an unsigned or debug-signed APK.
+#
 # Usage:
-#   ./build-niix.sh [PROJECT_DIR_OR_ZIP]
+#   ./build-niix.sh [PROJECT_DIR_OR_ZIP]              # signed release build (needs keystore.properties)
+#   ./build-niix.sh --debug [PROJECT_DIR_OR_ZIP]       # debug-signed build instead, no keystore needed
 #   ./build-niix.sh --setup-only [PROJECT_DIR_OR_ZIP]
-#   ./build-niix.sh --update [PROJECT_DIR_OR_ZIP]   # bump everything to newest STABLE, then build
+#   ./build-niix.sh --update [PROJECT_DIR_OR_ZIP]      # bump everything to newest STABLE, then build
 #
 # Optional overrides (export before running):
 #   NIIX_TOOLCHAIN     install location (default: <project>/.toolchain)
@@ -26,6 +31,7 @@ ADOPTIUM_API="https://api.adoptium.net/v3/binary/latest/17/ga/linux"
 
 SETUP_ONLY=0
 UPDATE=0
+DEBUG_BUILD=0
 PROJECT_ARG=""
 
 c_red=$'\033[31m'; c_grn=$'\033[32m'; c_ylw=$'\033[33m'; c_blu=$'\033[34m'; c_rst=$'\033[0m'
@@ -55,6 +61,7 @@ parse_args() {
         case "$arg" in
             --setup-only) SETUP_ONLY=1 ;;
             --update) UPDATE=1 ;;
+            --debug) DEBUG_BUILD=1 ;;
             -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
             *) PROJECT_ARG="$arg" ;;
         esac
@@ -223,17 +230,36 @@ generate_wrapper() {
 }
 
 build_apk() {
-    log "Building :app:assembleDebug (first run downloads dependencies; this can take a while)"
-    JAVA_HOME="$JAVA_HOME" ANDROID_HOME="$ANDROID_SDK_ROOT" ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
-        "${GRADLE_CMD:-$GRADLE_BIN}" -p "$PROJECT_DIR" --no-daemon :app:assembleDebug
+    if [ "$DEBUG_BUILD" -eq 1 ]; then
+        log "Building :app:assembleDebug (--debug requested; not for real use, no signing needed)"
+        JAVA_HOME="$JAVA_HOME" ANDROID_HOME="$ANDROID_SDK_ROOT" ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
+            "${GRADLE_CMD:-$GRADLE_BIN}" -p "$PROJECT_DIR" --no-daemon :app:assembleDebug
 
-    local apk="$PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
+        local apk="$PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
+        [ -f "$apk" ] || die "Build finished but APK not found at $apk"
+        local size; size="$(du -h "$apk" | awk '{print $1}')"
+        printf '\n%s================================================================%s\n' "$c_grn" "$c_rst"
+        ok "Debug APK built: $apk ($size)"
+        printf '\nInstall on a connected device (USB debugging on):\n  %s/platform-tools/adb install -r "%s"\n' "$ANDROID_SDK_ROOT" "$apk"
+        printf '\nRebuild later without re-running setup:\n  source "%s/env.sh" && (cd "%s" && gradle :app:assembleDebug)\n' "$TOOLCHAIN" "$PROJECT_DIR"
+        return 0
+    fi
+
+    if [ ! -f "$PROJECT_DIR/keystore.properties" ]; then
+        die "No release keystore configured. Copy keystore.properties.example to keystore.properties in $PROJECT_DIR, fill in your own signing details (see the comments in that file for the exact 'keytool' command to generate a keystore), then re-run this script. To build an unsigned debug APK instead for quick testing, run with --debug."
+    fi
+
+    log "Building :app:assembleRelease (first run downloads dependencies; this can take a while)"
+    JAVA_HOME="$JAVA_HOME" ANDROID_HOME="$ANDROID_SDK_ROOT" ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
+        "${GRADLE_CMD:-$GRADLE_BIN}" -p "$PROJECT_DIR" --no-daemon :app:assembleRelease
+
+    local apk="$PROJECT_DIR/app/build/outputs/apk/release/app-release.apk"
     [ -f "$apk" ] || die "Build finished but APK not found at $apk"
     local size; size="$(du -h "$apk" | awk '{print $1}')"
     printf '\n%s================================================================%s\n' "$c_grn" "$c_rst"
-    ok "APK built: $apk ($size)"
+    ok "Signed release APK built: $apk ($size)"
     printf '\nInstall on a connected device (USB debugging on):\n  %s/platform-tools/adb install -r "%s"\n' "$ANDROID_SDK_ROOT" "$apk"
-    printf '\nRebuild later without re-running setup:\n  source "%s/env.sh" && (cd "%s" && gradle :app:assembleDebug)\n' "$TOOLCHAIN" "$PROJECT_DIR"
+    printf '\nRebuild later without re-running setup:\n  source "%s/env.sh" && (cd "%s" && gradle :app:assembleRelease)\n' "$TOOLCHAIN" "$PROJECT_DIR"
 }
 
 update_versions() {
@@ -283,7 +309,8 @@ run() {
     if [ "$SETUP_ONLY" -eq 1 ]; then
         generate_wrapper
         ok "Setup complete (--setup-only)."
-        printf '\nBuild with:\n  source "%s/env.sh" && (cd "%s" && gradle :app:assembleDebug)\n' "$TOOLCHAIN" "$PROJECT_DIR"
+        printf '\nBuild a signed release (needs keystore.properties -- see keystore.properties.example):\n  source "%s/env.sh" && (cd "%s" && gradle :app:assembleRelease)\n' "$TOOLCHAIN" "$PROJECT_DIR"
+        printf '\nOr a debug build for quick testing:\n  source "%s/env.sh" && (cd "%s" && gradle :app:assembleDebug)\n' "$TOOLCHAIN" "$PROJECT_DIR"
         exit 0
     fi
 

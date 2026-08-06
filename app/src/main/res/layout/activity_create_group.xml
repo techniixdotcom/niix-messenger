@@ -52,6 +52,17 @@
             android:paddingTop="8dp" />
     </ScrollView>
 
+    <LinearLayout
+        android:id="@+id/keyboard_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@color/niix_surface"
+        android:paddingHorizontal="4dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="10dp" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/create_button"
         android:layout_width="match_parent"

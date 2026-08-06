@@ -100,6 +100,17 @@
 
     <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
 
+    <LinearLayout
+        android:id="@+id/keyboard_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@color/niix_surface"
+        android:paddingHorizontal="4dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="10dp" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/my_code_button"
         android:layout_width="match_parent"

@@ -1,6 +1,19 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+}
+
+// Release signing comes from a local, git-ignored keystore.properties (never from a value baked
+// into this file or committed to the repo) -- see keystore.properties.example for the format and
+// README "Signing a release build" for how to generate a keystore with keytool.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+val hasReleaseKeystore = keystorePropertiesFile.exists()
+if (hasReleaseKeystore) {
+    FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
 
 android {
@@ -21,15 +34,35 @@ android {
         }
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
             isDebuggable = false
+            // Minification/shrinking is left OFF for now: this app has never had a minified
+            // build tested on a device, and R8 stripping something libsignal/SQLCipher/kmp-tor
+            // reach via JNI or reflection would fail silently at runtime, not at build time --
+            // exactly the kind of bug that's very hard to catch without a real phone. Keep rules
+            // for all three are already in proguard-rules.pro, ready for when minification is
+            // deliberately tried and verified on-device as its own step.
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isMinifyEnabled = false
@@ -60,7 +93,11 @@ android {
                 "signal_jni*.dll",
                 "/META-INF/{AL2.0,LGPL2.1}",
                 "META-INF/LICENSE.md",
-                "META-INF/NOTICE.md"
+                "META-INF/NOTICE.md",
+                // bcprov-jdk18on and jspecify both ship an OSGi manifest at this exact path;
+                // neither is used at runtime (no OSGi container here), so it's safe to drop
+                // rather than pick one arbitrarily.
+                "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
             )
         }
     }
@@ -77,6 +114,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.drawerlayout)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.material)
@@ -85,6 +123,7 @@ dependencies {
     implementation(libs.kmp.tor.runtime)
     implementation(libs.kmp.tor.resource.exec.tor)
     implementation(libs.zxing.embedded)
+    implementation(libs.androidx.exifinterface)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

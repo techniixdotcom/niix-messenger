@@ -42,19 +42,19 @@
             android:src="@android:drawable/ic_menu_add"
             app:tint="@color/niix_pink" />
 
-        <TextView
+        <EditText
             android:id="@+id/input"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/input_bg"
-            android:textColor="@color/niix_on_surface_muted"
+            android:hint="@string/chat_hint"
+            android:textColorHint="@color/niix_on_surface_muted"
+            android:textColor="@color/niix_on_surface"
             android:paddingHorizontal="16dp"
             android:paddingVertical="12dp"
             android:maxLines="4"
-            android:clickable="true"
-            android:focusable="true"
-            android:textIsSelectable="false" />
+            android:inputType="textShortMessage|textMultiLine|textCapSentences" />
 
         <ImageButton
             android:id="@+id/send"

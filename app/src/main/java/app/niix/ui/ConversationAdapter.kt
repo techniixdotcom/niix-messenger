@@ -18,6 +18,8 @@ data class ConversationRow(
 class ConversationAdapter(
     private val onClick: (ConversationRow) -> Unit,
     private val loadAvatar: (android.widget.TextView, String) -> Unit = { _, _ -> },
+    private val onLongClick: (ConversationRow) -> Unit = {},
+    private val onAvatarClick: (String) -> Unit = {},
 ) : RecyclerView.Adapter<ConversationAdapter.VH>() {
 
     private val items = mutableListOf<ConversationRow>()
@@ -50,6 +52,8 @@ class ConversationAdapter(
             ""
         }
         holder.itemView.setOnClickListener { onClick(row) }
+        holder.itemView.setOnLongClickListener { onLongClick(row); true }
+        holder.avatar.setOnClickListener { onAvatarClick(row.id) }
     }
 
     class VH(view: View) : RecyclerView.ViewHolder(view) {

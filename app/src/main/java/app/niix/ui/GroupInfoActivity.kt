@@ -1,5 +1,6 @@
 package app.niix.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.LinearLayout
@@ -18,6 +19,7 @@ class GroupInfoActivity : SecureActivity() {
 
     private lateinit var conversationId: String
     private var amAdmin = false
+    private var leaving = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +28,7 @@ class GroupInfoActivity : SecureActivity() {
         setContentView(R.layout.activity_group_info)
         findViewById<MaterialToolbar>(R.id.toolbar).setNavigationOnClickListener { finish() }
         findViewById<android.widget.ImageButton>(R.id.btn_add_member).setOnClickListener { showAddMembers() }
+        findViewById<LinearLayout>(R.id.row_leave_group).setOnClickListener { confirmLeaveGroup() }
         load()
     }
 
@@ -111,6 +114,38 @@ class GroupInfoActivity : SecureActivity() {
                 }
                 .setNegativeButton(R.string.dialog_cancel, null)
                 .show()
+        }
+    }
+
+    private fun confirmLeaveGroup() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.leave_group_title)
+            .setMessage(R.string.leave_group_message)
+            .setPositiveButton(R.string.leave_group_confirm) { _, _ -> leaveGroupNow() }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
+    }
+
+    private fun leaveGroupNow() {
+        if (leaving) return
+        leaving = true
+        lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching { container.conversations.leaveGroup(conversationId) }.getOrDefault(false)
+            }
+            if (ok) {
+                Toast.makeText(this@GroupInfoActivity, getString(R.string.toast_left_group), Toast.LENGTH_SHORT).show()
+                // The chat behind this screen belongs to a group we're no longer in -- clear both
+                // it and this screen off the back stack rather than returning into a dead chat.
+                startActivity(
+                    Intent(this@GroupInfoActivity, HomeActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                )
+                finish()
+            } else {
+                leaving = false
+                Toast.makeText(this@GroupInfoActivity, getString(R.string.toast_failed, ""), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
