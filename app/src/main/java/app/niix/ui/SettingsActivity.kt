@@ -66,7 +66,7 @@ class SettingsActivity : SecureActivity() {
         }
 
         val screenshots = findViewById<MaterialSwitch>(R.id.switch_screenshots)
-        screenshots.isChecked = container.storage.settings.getBool(SettingsStore.KEY_ALLOW_SCREENSHOTS, false)
+        screenshots.isChecked = container.storage.settings.getBool(SettingsStore.KEY_ALLOW_SCREENSHOTS, true)
         screenshots.setOnCheckedChangeListener { _, checked ->
             container.storage.settings.setBool(SettingsStore.KEY_ALLOW_SCREENSHOTS, checked)
             if (checked) {

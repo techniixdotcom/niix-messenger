@@ -3,203 +3,163 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/niix_bg">
+        android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/home_content_root"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp">
-
-            <TextView
-                android:id="@+id/self_avatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/avatar_square"
-                android:gravity="center"
-                android:textColor="@color/niix_pink"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:contentDescription="@string/action_settings"
-                android:text="?" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/app_name"
-                android:textColor="@color/niix_green"
-                android:textStyle="bold"
-                android:textSize="20sp"
-                android:letterSpacing="0.05" />
-
-            <ImageView
-                android:id="@+id/btn_search"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:padding="8dp"
-                android:src="@drawable/ic_search"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/action_search" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingBottom="8dp">
-
-            <EditText
-                android:id="@+id/search_field"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:background="@drawable/input_bg"
-                android:paddingHorizontal="14dp"
-                android:hint="@string/search_hint"
-                android:textColorHint="@color/niix_on_surface_muted"
-                android:textColor="@color/niix_on_surface"
-                android:textSize="14sp"
-                android:fontFamily="monospace"
-                android:inputType="text"
-                android:maxLines="1"
-                android:imeOptions="actionSearch" />
-
-            <ImageButton
-                android:id="@+id/btn_add"
-                android:layout_width="46dp"
-                android:layout_height="46dp"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/avatar_square"
-                android:src="@android:drawable/ic_input_add"
-                app:tint="@color/niix_pink"
-                android:contentDescription="@string/action_add_contact" />
-        </LinearLayout>
-
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:scrollbars="none">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/niix_bg">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="24dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingTop="14dp"
-                    android:paddingBottom="6dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/section_groups"
-                        android:textColor="@color/niix_pink"
-                        android:textStyle="bold"
-                        android:textSize="13sp"
-                        android:letterSpacing="0.08" />
-                    <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"
-                        android:layout_marginHorizontal="10dp" android:background="@color/niix_divider" />
-                    <ImageButton
-                        android:id="@+id/btn_add_group"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:padding="4dp"
-                        android:background="@drawable/avatar_square"
-                        android:src="@android:drawable/ic_input_add"
-                        app:tint="@color/niix_green"
-                        android:contentDescription="@string/action_create_group" />
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/group_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp">
 
                 <TextView
-                    android:id="@+id/groups_empty"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/self_avatar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/avatar_square"
                     android:gravity="center"
-                    android:paddingVertical="18dp"
-                    android:text="@string/groups_empty"
-                    android:textColor="@color/niix_on_surface_muted"
-                    android:textSize="13sp"
-                    android:fontFamily="monospace" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="6dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/section_contacts"
-                        android:textColor="@color/niix_pink"
-                        android:textStyle="bold"
-                        android:textSize="13sp"
-                        android:letterSpacing="0.08" />
-                    <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"
-                        android:layout_marginStart="10dp" android:background="@color/niix_divider" />
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/contact_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
+                    android:textColor="@color/niix_pink"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:contentDescription="@string/action_settings"
+                    android:text="?" />
 
                 <TextView
-                    android:id="@+id/contacts_empty"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:gravity="center"
-                    android:paddingVertical="18dp"
-                    android:text="@string/contacts_empty"
-                    android:textColor="@color/niix_on_surface_muted"
-                    android:textSize="13sp"
-                    android:fontFamily="monospace" />
+                    android:text="@string/app_name"
+                    android:textColor="@color/niix_green"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:letterSpacing="0.05" />
+
+                <!-- Balances self_avatar's width so the title stays visually centered. -->
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="40dp" />
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
 
-        <LinearLayout
-            android:id="@+id/keyboard_panel"
-            android:layout_width="match_parent"
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingBottom="96dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:paddingTop="14dp"
+                        android:paddingBottom="6dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/section_groups"
+                            android:textColor="@color/niix_pink"
+                            android:textStyle="bold"
+                            android:textSize="13sp"
+                            android:letterSpacing="0.08" />
+                        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"
+                            android:layout_marginStart="10dp" android:background="@color/niix_divider" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/group_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/groups_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:paddingVertical="18dp"
+                        android:text="@string/groups_empty"
+                        android:textColor="@color/niix_on_surface_muted"
+                        android:textSize="13sp"
+                        android:fontFamily="monospace" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="6dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/section_contacts"
+                            android:textColor="@color/niix_pink"
+                            android:textStyle="bold"
+                            android:textSize="13sp"
+                            android:letterSpacing="0.08" />
+                        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"
+                            android:layout_marginStart="10dp" android:background="@color/niix_divider" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/contact_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/contacts_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:paddingVertical="18dp"
+                        android:text="@string/contacts_empty"
+                        android:textColor="@color/niix_on_surface_muted"
+                        android:textSize="13sp"
+                        android:fontFamily="monospace" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </LinearLayout>
+
+        <!-- Single entry point for starting either a private chat or a group. -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_new"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:background="@color/niix_surface"
-            android:paddingHorizontal="4dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="10dp" />
-    </LinearLayout>
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="@string/action_new"
+            android:src="@android:drawable/ic_input_add"
+            app:tint="@color/niix_on_primary"
+            app:backgroundTint="@color/niix_primary"
+            app:elevation="6dp" />
+    </FrameLayout>
 
     <!-- Left-edge-swipe panel: every saved contact, including ones whose conversation was
          deleted, so a person can always start messaging them again without re-adding them. -->
     <LinearLayout
+        android:id="@+id/contacts_drawer"
         android:layout_width="300dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"

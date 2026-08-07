@@ -19,7 +19,7 @@ open class SecureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         applyDarkSystemBars()
         val allowScreenshots = runCatching {
-            container.storage.settings.getBool(app.niix.core.storage.SettingsStore.KEY_ALLOW_SCREENSHOTS, false)
+            container.storage.settings.getBool(app.niix.core.storage.SettingsStore.KEY_ALLOW_SCREENSHOTS, true)
         }.getOrDefault(false)
         if (!allowScreenshots) {
             window.setFlags(

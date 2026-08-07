@@ -21,10 +21,20 @@ class MessageAdapter(
 ) : RecyclerView.Adapter<MessageAdapter.VH>() {
 
     private val items = mutableListOf<Message>()
+    private var highlightedId: String? = null
 
     fun submit(messages: List<Message>) {
         items.clear()
         items.addAll(messages)
+        notifyDataSetChanged()
+    }
+
+    fun currentItems(): List<Message> = items
+
+    /** Tints one message's row to mark it as the active in-chat search result; pass null to clear. */
+    fun setHighlighted(messageId: String?) {
+        if (highlightedId == messageId) return
+        highlightedId = messageId
         notifyDataSetChanged()
     }
 
@@ -44,6 +54,9 @@ class MessageAdapter(
         val context = holder.itemView.context
         holder.time.text = DateUtils.formatDateTime(context, m.createdAtEpochMillis, DateUtils.FORMAT_SHOW_TIME)
         holder.itemView.setOnLongClickListener { onLongClick(m); true }
+        holder.itemView.setBackgroundColor(
+            if (m.id == highlightedId) context.getColor(R.color.niix_search_highlight) else android.graphics.Color.TRANSPARENT,
+        )
 
         val attachment = if (!m.deleted && m.type == MessageType.ATTACHMENT) m.attachmentId?.let { attachmentOf(it) } else null
 

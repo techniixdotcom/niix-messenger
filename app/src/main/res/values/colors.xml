@@ -18,4 +18,5 @@
     <color name="niix_calc_operator">#33E39F</color>
     <color name="niix_calc_key">#1A212C</color>
     <color name="niix_calc_key_alt">#232C38</color>
+    <color name="niix_search_highlight">#4D33E39F</color>
 </resources>

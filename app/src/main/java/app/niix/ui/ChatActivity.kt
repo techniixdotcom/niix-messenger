@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import app.niix.core.model.Attachment
@@ -22,6 +23,7 @@ import app.niix.R
 import app.niix.core.crypto.SafetyNumber
 import app.niix.core.model.Message
 import app.niix.core.model.MessageDirection
+import app.niix.core.model.MessageType
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,6 +57,11 @@ class ChatActivity : SecureActivity() {
     }
     private lateinit var adapter: MessageAdapter
     private lateinit var list: RecyclerView
+    private lateinit var searchBar: LinearLayout
+    private lateinit var searchField: EditText
+    private lateinit var searchCount: TextView
+    private var searchMatchPositions: List<Int> = emptyList()
+    private var searchMatchIndex: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +84,8 @@ class ChatActivity : SecureActivity() {
         list = findViewById(R.id.message_list)
         list.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
         list.adapter = adapter
+
+        setUpSearchBar()
 
         val input = findViewById<EditText>(R.id.input)
         val keyboardPanel = findViewById<LinearLayout>(R.id.keyboard_panel)
@@ -133,7 +142,11 @@ class ChatActivity : SecureActivity() {
                     val mostlyHorizontal = kotlin.math.abs(dy) < minTravelPx
                     val fastEnough = kotlin.math.abs(velocityX) > minVelocityPx
                     if (startedAtLeftEdge && swipedRightFarEnough && mostlyHorizontal && fastEnough) {
-                        finish()
+                        if (::searchBar.isInitialized && searchBar.visibility == android.view.View.VISIBLE) {
+                            closeSearch()
+                        } else {
+                            finish()
+                        }
                         return true
                     }
                     return false
@@ -145,6 +158,87 @@ class ChatActivity : SecureActivity() {
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu.findItem(R.id.action_group_info)?.isVisible = isGroup
         return super.onPrepareOptionsMenu(menu)
+    }
+
+    /** Wires up the in-chat "find in this chat" bar (opened from the toolbar overflow menu):
+     * typing highlights and jumps straight to the matching message instead of just filtering a
+     * list, and prev/next step through every match in the conversation. */
+    private fun setUpSearchBar() {
+        searchBar = findViewById(R.id.search_bar)
+        searchField = findViewById(R.id.search_field)
+        searchCount = findViewById(R.id.search_count)
+        searchField.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) = performSearch(s?.toString().orEmpty())
+        })
+        findViewById<ImageButton>(R.id.search_prev).setOnClickListener { stepMatch(-1) }
+        findViewById<ImageButton>(R.id.search_next).setOnClickListener { stepMatch(1) }
+        findViewById<ImageButton>(R.id.search_close).setOnClickListener { closeSearch() }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (searchBar.visibility == android.view.View.VISIBLE) {
+                    closeSearch()
+                    return
+                }
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+                isEnabled = true
+            }
+        })
+    }
+
+    private fun openSearch() {
+        searchBar.visibility = android.view.View.VISIBLE
+        searchField.requestFocus()
+        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(searchField, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        performSearch(searchField.text.toString())
+    }
+
+    private fun closeSearch() {
+        searchBar.visibility = android.view.View.GONE
+        searchField.text.clear()
+        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(searchField.windowToken, 0)
+        searchMatchPositions = emptyList()
+        searchMatchIndex = -1
+        adapter.setHighlighted(null)
+    }
+
+    private fun performSearch(query: String) {
+        val q = query.trim()
+        if (q.isEmpty()) {
+            searchMatchPositions = emptyList()
+            searchMatchIndex = -1
+            searchCount.text = "0/0"
+            adapter.setHighlighted(null)
+            return
+        }
+        searchMatchPositions = adapter.currentItems().withIndex()
+            .filter { (_, m) -> !m.deleted && m.type == MessageType.TEXT && m.body.contains(q, ignoreCase = true) }
+            .map { it.index }
+        searchMatchIndex = if (searchMatchPositions.isEmpty()) -1 else searchMatchPositions.lastIndex
+        updateSearchCount()
+        if (searchMatchIndex >= 0) goToMatch() else adapter.setHighlighted(null)
+    }
+
+    private fun stepMatch(delta: Int) {
+        if (searchMatchPositions.isEmpty()) return
+        searchMatchIndex = (searchMatchIndex + delta + searchMatchPositions.size) % searchMatchPositions.size
+        updateSearchCount()
+        goToMatch()
+    }
+
+    private fun updateSearchCount() {
+        searchCount.text = if (searchMatchPositions.isEmpty()) "0/0" else "${searchMatchIndex + 1}/${searchMatchPositions.size}"
+    }
+
+    private fun goToMatch() {
+        val pos = searchMatchPositions.getOrNull(searchMatchIndex) ?: return
+        val message = adapter.currentItems().getOrNull(pos) ?: return
+        adapter.setHighlighted(message.id)
+        (list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(pos, list.height / 3)
     }
 
     private fun showAttachMenu() {
@@ -276,7 +370,13 @@ class ChatActivity : SecureActivity() {
                 container.conversations.messagesFor(conversationId)
             }
             adapter.submit(messages)
-            if (messages.isNotEmpty()) list.scrollToPosition(messages.size - 1)
+            if (::searchBar.isInitialized && searchBar.visibility == android.view.View.VISIBLE) {
+                // Keep results in sync as new messages arrive instead of yanking the scroll
+                // position back to the bottom while someone is mid-search.
+                performSearch(searchField.text.toString())
+            } else if (messages.isNotEmpty()) {
+                list.scrollToPosition(messages.size - 1)
+            }
         }
     }
 
@@ -406,6 +506,7 @@ class ChatActivity : SecureActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.action_search -> { openSearch(); true }
         R.id.action_group_info -> {
             startActivity(Intent(this, GroupInfoActivity::class.java).putExtra(GroupInfoActivity.EXTRA_ID, conversationId))
             true

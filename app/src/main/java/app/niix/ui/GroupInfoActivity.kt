@@ -63,6 +63,33 @@ class GroupInfoActivity : SecureActivity() {
             textSize = 16f
             setPadding(24, 32, 24, 32)
             if (amAdmin) setOnClickListener { showMemberActions(onion, name, role) }
+            if (onion != container.selfOnion) setOnLongClickListener { showAddToContacts(onion, name); true }
+        }
+    }
+
+    /** Long-press on a group member: save them as a direct contact, so they show up in the
+     * left-edge contacts drawer and a private chat can be started with them outside the group. */
+    private fun showAddToContacts(onion: String, name: String) {
+        lifecycleScope.launch {
+            val alreadyContact = withContext(Dispatchers.IO) {
+                container.conversations.listContacts().any { it.onionAddress.value == onion }
+            }
+            if (alreadyContact) {
+                Toast.makeText(this@GroupInfoActivity, getString(R.string.toast_already_contact), Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            androidx.appcompat.app.AlertDialog.Builder(this@GroupInfoActivity)
+                .setTitle(name)
+                .setItems(arrayOf(getString(R.string.group_add_to_contacts))) { _, _ ->
+                    lifecycleScope.launch {
+                        val ok = withContext(Dispatchers.IO) {
+                            runCatching { container.conversations.addGroupMemberToContacts(onion, name) }.getOrDefault(false)
+                        }
+                        val message = if (ok) getString(R.string.toast_added_to_contacts, name) else getString(R.string.toast_failed, "")
+                        Toast.makeText(this@GroupInfoActivity, message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .show()
         }
     }
 

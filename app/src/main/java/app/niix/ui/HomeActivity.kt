@@ -2,16 +2,15 @@ package app.niix.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
-import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,9 +35,6 @@ class HomeActivity : SecureActivity() {
     private lateinit var drawerContactAdapter: ConversationAdapter
     private lateinit var drawerContactsEmpty: View
 
-    private var allGroups: List<ConversationRow> = emptyList()
-    private var allContacts: List<ConversationRow> = emptyList()
-    private var query: String = ""
     private var initialized = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +45,7 @@ class HomeActivity : SecureActivity() {
         contactsEmpty = findViewById(R.id.contacts_empty)
 
         drawerLayout = findViewById(R.id.drawer_layout)
+        applyStatusBarInsets()
         drawerContactsEmpty = findViewById(R.id.drawer_contacts_empty)
         drawerContactAdapter = ConversationAdapter(
             onClick = { row -> openContactFromDrawer(row.id) },
@@ -100,27 +97,45 @@ class HomeActivity : SecureActivity() {
         findViewById<TextView>(R.id.self_avatar).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-        val search = findViewById<EditText>(R.id.search_field)
-        NiixKeyboardController(this, findViewById<LinearLayout>(R.id.keyboard_panel)).attach(search)
-        findViewById<ImageView>(R.id.btn_search).setOnClickListener { search.requestFocus() }
-        search.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                query = s?.toString()?.trim().orEmpty()
-                applyFilter()
-            }
-        })
-        findViewById<ImageButton>(R.id.btn_add).setOnClickListener {
-            startActivity(Intent(this, NewMessageActivity::class.java))
-        }
-        findViewById<ImageButton>(R.id.btn_add_group).setOnClickListener {
-            startActivity(Intent(this, CreateGroupActivity::class.java))
-        }
+        findViewById<ImageButton>(R.id.fab_new).setOnClickListener { showNewMenu(it) }
 
         lifecycleScope.launch {
             container.conversations.changes.collect { load() }
         }
+    }
+
+    /**
+     * Forces the header row and the contacts drawer to sit below the status bar.
+     *
+     * DrawerLayout doesn't apply window-inset padding to its children the way a plain
+     * ViewGroup with `fitsSystemWindows` does, so with edge-to-edge enabled (see
+     * [SecureActivity]) Home's content was drawing all the way to the physical top of the
+     * screen, leaving the status bar row transparent -- some device skins then filled that
+     * transparent strip with the app's accent color, which is the "green bar" this fixes.
+     */
+    private fun applyStatusBarInsets() {
+        val content = findViewById<LinearLayout>(R.id.home_content_root)
+        val drawer = findViewById<LinearLayout>(R.id.contacts_drawer)
+        ViewCompat.setOnApplyWindowInsetsListener(drawerLayout) { _, insets ->
+            val top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
+            content.setPadding(content.paddingLeft, top, content.paddingRight, content.paddingBottom)
+            drawer.setPadding(drawer.paddingLeft, top, drawer.paddingRight, drawer.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(drawerLayout)
+    }
+
+    private fun showNewMenu(anchor: View) {
+        PopupMenu(this, anchor).apply {
+            menuInflater.inflate(R.menu.fab_new_menu, menu)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_new_message -> startActivity(Intent(this@HomeActivity, NewMessageActivity::class.java))
+                    R.id.action_new_group -> startActivity(Intent(this@HomeActivity, CreateGroupActivity::class.java))
+                }
+                true
+            }
+        }.show()
     }
 
     override fun onResume() {
@@ -189,34 +204,11 @@ class HomeActivity : SecureActivity() {
                 val c = all.filter { it.first == ConversationType.DIRECT }.map { it.second }.sortedByDescending { it.time }
                 Pair(g, c)
             }
-            allGroups = groups
-            allContacts = contacts
-            applyFilter()
-        }
-    }
-
-    private fun applyFilter() {
-        lifecycleScope.launch {
-            val q = query
-            val msgMatches = if (q.isEmpty()) emptyMap() else container.conversations.searchMessageMatches(q)
-            val groups = if (q.isEmpty()) allGroups else allGroups.mapNotNull { withSearchMatch(it, q, msgMatches) }
-            val contacts = if (q.isEmpty()) allContacts else allContacts.mapNotNull { withSearchMatch(it, q, msgMatches) }
             groupAdapter.submit(groups)
             contactAdapter.submit(contacts)
             groupsEmpty.visibility = if (groups.isEmpty()) View.VISIBLE else View.GONE
             contactsEmpty.visibility = if (contacts.isEmpty()) View.VISIBLE else View.GONE
         }
-    }
-
-    /**
-     * Returns [row] unchanged if its title matches [query]; returns it with its preview swapped
-     * for the matching message line if only its message content matches; returns null if neither
-     * matches (so it's filtered out of the search results).
-     */
-    private fun withSearchMatch(row: ConversationRow, query: String, msgMatches: Map<String, String>): ConversationRow? {
-        if (row.title.contains(query, ignoreCase = true)) return row
-        val matchedBody = msgMatches[row.id] ?: return null
-        return row.copy(preview = getString(R.string.search_message_match_prefix, matchedBody))
     }
 
     private fun previewOf(m: Message): String = when {

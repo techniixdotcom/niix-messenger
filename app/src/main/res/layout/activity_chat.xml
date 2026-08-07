@@ -15,6 +15,71 @@
         app:navigationIcon="@android:drawable/ic_menu_revert"
         app:titleTextColor="@color/niix_on_surface" />
 
+    <LinearLayout
+        android:id="@+id/search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        android:background="@color/niix_surface"
+        android:padding="8dp">
+
+        <EditText
+            android:id="@+id/search_field"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/input_bg"
+            android:hint="@string/chat_search_hint"
+            android:textColorHint="@color/niix_on_surface_muted"
+            android:textColor="@color/niix_on_surface"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp"
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionSearch" />
+
+        <TextView
+            android:id="@+id/search_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:textColor="@color/niix_on_surface_muted"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:text="0/0" />
+
+        <ImageButton
+            android:id="@+id/search_prev"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/arrow_up_float"
+            app:tint="@color/niix_on_surface"
+            android:contentDescription="@string/chat_search_prev" />
+
+        <ImageButton
+            android:id="@+id/search_next"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/arrow_down_float"
+            app:tint="@color/niix_on_surface"
+            android:contentDescription="@string/chat_search_next" />
+
+        <ImageButton
+            android:id="@+id/search_close"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/niix_on_surface"
+            android:contentDescription="@string/dialog_close" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/message_list"
         android:layout_width="match_parent"
