@@ -1,3 +1,5 @@
+![screen](https://github.com/techniixdotcom/calc-chat/blob/main/animation.gif)****
+
 # NiiX
 
 A serverless, peer-to-peer messenger for Android. No accounts, no phone number, no servers. Messages are end-to-end encrypted with post-quantum cryptography and delivered directly between phones over the Tor network. The app is disguised as a working calculator.
