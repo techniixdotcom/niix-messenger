@@ -16,6 +16,7 @@ data class Conversation(
     val title: String,
     val disappearSeconds: Long,
     val createdAtEpochMillis: Long,
+    val pending: Boolean = false,
 )
 
 data class GroupMember(

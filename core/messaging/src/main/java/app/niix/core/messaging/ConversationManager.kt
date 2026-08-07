@@ -77,6 +77,47 @@ class ConversationManager(
         storage.contacts.list()
     }
 
+    /** Conversations started by a stranger messaging you first (e.g. after scanning your QR
+     * code) that you haven't accepted or blocked yet. */
+    suspend fun pendingRequests(): List<Conversation> = withContext(Dispatchers.IO) {
+        storage.conversations.list().filter { it.pending }
+    }
+
+    /** Accepts a message request: saves the sender as a contact and turns their conversation
+     * into a normal one. */
+    suspend fun acceptRequest(conversationId: String): Boolean = withContext(Dispatchers.IO) {
+        val conversation = storage.conversations.get(conversationId) ?: return@withContext false
+        if (!conversation.pending) return@withContext false
+        if (!storage.contacts.isKnown(conversationId)) {
+            storage.contacts.upsert(
+                Contact(
+                    onionAddress = OnionAddress.parse(conversationId),
+                    displayName = conversation.title,
+                    fingerprint = crypto.remoteFingerprint(conversationId) ?: IdentityFingerprint(""),
+                    trustState = TrustState.UNVERIFIED,
+                    addedAtEpochMillis = now(),
+                ),
+            )
+        }
+        storage.conversations.setPending(conversationId, false)
+        notifyChanged()
+        true
+    }
+
+    /** Blocks a message request's sender and removes the pending conversation and its messages
+     * from this device -- the same as [deleteConversation] plus adding them to the blocklist. */
+    suspend fun blockRequest(conversationId: String): Boolean = withContext(Dispatchers.IO) {
+        val conversation = storage.conversations.get(conversationId) ?: return@withContext false
+        if (!conversation.pending) return@withContext false
+        storage.blocklist.block(conversationId)
+        storage.attachments.listForConversation(conversationId).forEach { runCatching { File(it.filePath).delete() } }
+        storage.attachments.deleteForConversation(conversationId)
+        storage.messages.deleteForConversation(conversationId)
+        storage.conversations.delete(conversationId)
+        notifyChanged()
+        true
+    }
+
     suspend fun messagesFor(conversationId: String): List<Message> = withContext(Dispatchers.IO) {
         storage.messages.listForConversation(conversationId)
     }
@@ -588,12 +629,27 @@ class ConversationManager(
     suspend fun setSelfProfile(bytes: ByteArray?) = withContext(Dispatchers.IO) {
         storeProfile("self", bytes)
         notifyChanged()
-        for (conversation in storage.conversations.list().filter { it.type == ConversationType.DIRECT }) {
+        for (conversation in storage.conversations.list().filter { it.type == ConversationType.DIRECT && !it.pending }) {
             runCatching {
                 ensureSession(conversation.id)
                 sendWire(conversation.id, WireMessage.ProfileUpdate(selfOnion(), bytes))
             }
         }
+    }
+
+    /** Sets (or clears, with `bytes = null`) a group's shared photo and pushes it to every other
+     * member. Admin-only -- returns false for anyone else, or if [conversationId] isn't a group. */
+    suspend fun setGroupProfile(conversationId: String, bytes: ByteArray?): Boolean = withContext(Dispatchers.IO) {
+        val conversation = storage.conversations.get(conversationId) ?: return@withContext false
+        if (conversation.type != ConversationType.GROUP) return@withContext false
+        if (!storage.members.isAdmin(conversationId, selfOnion())) return@withContext false
+        storeProfile(conversationId, bytes)
+        notifyChanged()
+        val recipients = storage.members.listForConversation(conversationId)
+            .map { it.memberOnion.value }
+            .filter { it != selfOnion() }
+        recipients.forEach { runCatching { ensureSession(it); sendWire(it, WireMessage.ProfileUpdate(selfOnion(), bytes, conversationId)) } }
+        true
     }
 
     private fun copyExactly(input: InputStream, out: OutputStream, count: Long) {
@@ -708,8 +764,16 @@ class ConversationManager(
                 }
             }
             is WireMessage.ProfileUpdate -> {
-                storeProfile(fromOnion, wire.image)
-                notifyChanged()
+                val groupId = wire.conversationId
+                if (groupId == null) {
+                    storeProfile(fromOnion, wire.image)
+                    notifyChanged()
+                } else if (storage.members.isAdmin(groupId, fromOnion)) {
+                    // Only an admin of this specific group may push its shared photo -- otherwise
+                    // any member (or anyone spoofing a group id) could overwrite it for everyone.
+                    storeProfile(groupId, wire.image)
+                    notifyChanged()
+                }
             }
         }
     }
@@ -902,8 +966,15 @@ class ConversationManager(
 
     private fun ensureDirectConversationIfMissing(conversationId: String, fromOnion: String) {
         if (conversationId == fromOnion && storage.conversations.get(conversationId) == null) {
+            // A stranger who only has your onion (e.g. from scanning your QR code) can message
+            // you without you ever adding them first. Rather than silently starting a normal
+            // chat, park it as a pending request -- it shows up under "Requests" on Home until
+            // you accept (saves them as a contact) or block them. If they're already a saved
+            // contact of yours, though, this is just their side of a conversation you both
+            // already agreed to, so it opens normally.
+            val isStranger = !storage.contacts.isKnown(fromOnion)
             storage.conversations.upsert(
-                Conversation(fromOnion, ConversationType.DIRECT, fromOnion, 0, now()),
+                Conversation(fromOnion, ConversationType.DIRECT, fromOnion, 0, now(), pending = isStranger),
             )
         }
     }

@@ -53,6 +53,10 @@ sealed class WireMessage {
     data class ProfileUpdate(
         val senderOnion: String,
         val image: ByteArray?,
+        /** Null for a personal profile-photo update (stored under [senderOnion]); set to a
+         * group conversation id when an admin is pushing that group's photo to its members
+         * (stored under the group id instead, shared by everyone in it). */
+        val conversationId: String? = null,
     ) : WireMessage()
 }
 
@@ -119,6 +123,7 @@ object WireCodec {
                     s.writeByte(TYPE_PROFILE)
                     s.writeUTF(message.senderOnion)
                     writeOptionalBlock(s, message.image)
+                    writeOptionalString(s, message.conversationId)
                 }
             }
         }
@@ -170,6 +175,7 @@ object WireCodec {
                 TYPE_PROFILE -> WireMessage.ProfileUpdate(
                     senderOnion = s.readUTF(),
                     image = readOptionalBlock(s),
+                    conversationId = readOptionalString(s),
                 )
                 else -> throw IllegalArgumentException("Unknown wire type $type")
             }
@@ -209,6 +215,18 @@ object WireCodec {
 
     private fun readOptionalBlock(s: DataInputStream): ByteArray? =
         if (s.readBoolean()) readBlock(s) else null
+
+    private fun writeOptionalString(s: DataOutputStream, value: String?) {
+        if (value == null) {
+            s.writeBoolean(false)
+        } else {
+            s.writeBoolean(true)
+            s.writeUTF(value)
+        }
+    }
+
+    private fun readOptionalString(s: DataInputStream): String? =
+        if (s.readBoolean()) s.readUTF() else null
 
     private const val MAX_LIST = 4096
     private const val MAX_BLOCK = 1 shl 20

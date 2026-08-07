@@ -118,6 +118,9 @@ class SecureDatabase internal constructor(private val appContext: Context) {
         db.beginTransaction()
         try {
             Schema.DDL.forEach(db::execSQL)
+            Schema.COLUMN_MIGRATIONS.forEach { (_, statement) ->
+                runCatching { db.execSQL(statement) }
+            }
             db.setTransactionSuccessful()
         } finally {
             db.endTransaction()

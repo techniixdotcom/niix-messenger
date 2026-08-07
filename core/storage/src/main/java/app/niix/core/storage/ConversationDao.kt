@@ -17,8 +17,14 @@ class ConversationDao internal constructor(private val secureDatabase: SecureDat
             put(t.COL_TITLE, conversation.title)
             put(t.COL_DISAPPEAR_SECONDS, conversation.disappearSeconds)
             put(t.COL_CREATED_AT, conversation.createdAtEpochMillis)
+            put(t.COL_PENDING, if (conversation.pending) 1 else 0)
         }
         db.insertWithOnConflict(t.TABLE, null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    fun setPending(id: String, pending: Boolean) {
+        val values = ContentValues().apply { put(t.COL_PENDING, if (pending) 1 else 0) }
+        db.update(t.TABLE, values, "${t.COL_ID} = ?", arrayOf(id))
     }
 
     fun get(id: String): Conversation? {
@@ -50,5 +56,6 @@ class ConversationDao internal constructor(private val secureDatabase: SecureDat
         title = getString(getColumnIndexOrThrow(t.COL_TITLE)),
         disappearSeconds = getLong(getColumnIndexOrThrow(t.COL_DISAPPEAR_SECONDS)),
         createdAtEpochMillis = getLong(getColumnIndexOrThrow(t.COL_CREATED_AT)),
+        pending = getInt(getColumnIndexOrThrow(t.COL_PENDING)) != 0,
     )
 }

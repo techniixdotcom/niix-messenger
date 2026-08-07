@@ -69,6 +69,7 @@ object Schema {
         const val COL_TITLE = "title"
         const val COL_DISAPPEAR_SECONDS = "disappear_seconds"
         const val COL_CREATED_AT = "created_at"
+        const val COL_PENDING = "pending"
     }
 
     object GroupMembers {
@@ -184,7 +185,8 @@ object Schema {
             ${Conversations.COL_TYPE} TEXT NOT NULL,
             ${Conversations.COL_TITLE} TEXT NOT NULL,
             ${Conversations.COL_DISAPPEAR_SECONDS} INTEGER NOT NULL DEFAULT 0,
-            ${Conversations.COL_CREATED_AT} INTEGER NOT NULL
+            ${Conversations.COL_CREATED_AT} INTEGER NOT NULL,
+            ${Conversations.COL_PENDING} INTEGER NOT NULL DEFAULT 0
         )
         """.trimIndent(),
         """
@@ -237,5 +239,17 @@ object Schema {
             ${Blocked.COL_ONION} TEXT PRIMARY KEY
         )
         """.trimIndent(),
+    )
+
+    /**
+     * Columns added after the initial [DDL] shipped. `CREATE TABLE IF NOT EXISTS` above only
+     * takes effect for a brand-new database file, so a device that already has a
+     * `conversations` table from before this column existed needs it added explicitly.
+     * Each entry is `table to "ALTER TABLE ... ADD COLUMN ..."`; the caller applies them and
+     * ignores "duplicate column" failures, which makes this safe to run on every app start
+     * regardless of whether the column is already there.
+     */
+    val COLUMN_MIGRATIONS: List<Pair<String, String>> = listOf(
+        Conversations.TABLE to "ALTER TABLE ${Conversations.TABLE} ADD COLUMN ${Conversations.COL_PENDING} INTEGER NOT NULL DEFAULT 0",
     )
 }
