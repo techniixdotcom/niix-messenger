@@ -215,6 +215,27 @@ class ConversationManager(
         crypto.safetyNumber(onion, selfOnion())
     }
 
+    /**
+     * Saves a group member as a direct contact, so they show up in the left-edge contacts
+     * drawer and a private chat can be started with them outside the group. Returns false if
+     * they're already a contact, or if [onion] is your own address.
+     */
+    suspend fun addGroupMemberToContacts(onion: String, displayName: String): Boolean = withContext(Dispatchers.IO) {
+        if (onion == selfOnion()) return@withContext false
+        if (storage.contacts.isKnown(onion)) return@withContext false
+        storage.contacts.upsert(
+            Contact(
+                onionAddress = OnionAddress.parse(onion),
+                displayName = displayName,
+                fingerprint = crypto.remoteFingerprint(onion) ?: IdentityFingerprint(""),
+                trustState = TrustState.UNVERIFIED,
+                addedAtEpochMillis = now(),
+            ),
+        )
+        notifyChanged()
+        true
+    }
+
     suspend fun createGroup(title: String, memberOnions: List<String>): Conversation =
         withContext(Dispatchers.IO) {
             val conversationId = UUID.randomUUID().toString()
