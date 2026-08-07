@@ -1,4 +1,6 @@
-![screen](https://github.com/techniixdotcom/calc-chat/blob/main/animation.gif)****
+<p align="center" width="100%">
+    <img width="33%" src="https://github.com/techniixdotcom/calc-chat/blob/main/animation.gif"> 
+</p>
 
 # NiiX
 
