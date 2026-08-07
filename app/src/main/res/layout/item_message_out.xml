@@ -15,7 +15,7 @@
         android:background="@drawable/bubble_out"
         android:paddingHorizontal="14dp"
         android:paddingVertical="10dp"
-        android:textColor="@color/niix_on_primary"
+        android:textColor="@color/niix_message_out_text"
         android:textSize="15sp" />
 
 
@@ -37,7 +37,7 @@
         android:background="@drawable/bubble_out"
         android:paddingHorizontal="14dp"
         android:paddingVertical="10dp"
-        android:textColor="@color/niix_on_primary"
+        android:textColor="@color/niix_message_out_text"
         android:textSize="14sp"
         android:visibility="gone" />
 

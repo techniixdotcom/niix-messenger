@@ -44,7 +44,7 @@ class CreateGroupActivity : SecureActivity() {
         lifecycleScope.launch {
             val contacts = withContext(Dispatchers.IO) {
                 container.conversations.listConversations()
-                    .filter { it.type == ConversationType.DIRECT }
+                    .filter { it.type == ConversationType.DIRECT && !it.pending }
                     .map { ContactEntry(it.id, it.title) }
             }
             val memberContainer = findViewById<LinearLayout>(R.id.member_container)

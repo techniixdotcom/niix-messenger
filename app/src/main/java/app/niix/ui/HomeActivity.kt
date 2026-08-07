@@ -3,6 +3,7 @@ package app.niix.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -105,21 +106,27 @@ class HomeActivity : SecureActivity() {
     }
 
     /**
-     * Forces the header row and the contacts drawer to sit below the status bar.
+     * Forces the header row and the contacts drawer to sit below the status bar, and pushes the
+     * FAB up above the navigation bar.
      *
      * DrawerLayout doesn't apply window-inset padding to its children the way a plain
      * ViewGroup with `fitsSystemWindows` does, so with edge-to-edge enabled (see
-     * [SecureActivity]) Home's content was drawing all the way to the physical top of the
-     * screen, leaving the status bar row transparent -- some device skins then filled that
-     * transparent strip with the app's accent color, which is the "green bar" this fixes.
+     * [SecureActivity]) Home's content was drawing all the way to the physical edges of the
+     * screen -- the status bar row stayed transparent (some device skins filled that with the
+     * app's accent color, the earlier "green bar"), and the FAB sat low enough to be covered by
+     * 3-button navigation bars.
      */
     private fun applyStatusBarInsets() {
         val content = findViewById<LinearLayout>(R.id.home_content_root)
         val drawer = findViewById<LinearLayout>(R.id.contacts_drawer)
+        val fab = findViewById<ImageButton>(R.id.fab_new)
+        val fabBaseMarginPx = (24 * resources.displayMetrics.density).toInt()
         ViewCompat.setOnApplyWindowInsetsListener(drawerLayout) { _, insets ->
-            val top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
-            content.setPadding(content.paddingLeft, top, content.paddingRight, content.paddingBottom)
-            drawer.setPadding(drawer.paddingLeft, top, drawer.paddingRight, drawer.paddingBottom)
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            content.setPadding(content.paddingLeft, bars.top, content.paddingRight, content.paddingBottom)
+            drawer.setPadding(drawer.paddingLeft, bars.top, drawer.paddingRight, drawer.paddingBottom)
+            (fab.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = fabBaseMarginPx + bars.bottom
+            fab.requestLayout()
             insets
         }
         ViewCompat.requestApplyInsets(drawerLayout)
@@ -187,8 +194,8 @@ class HomeActivity : SecureActivity() {
 
     private fun load() {
         lifecycleScope.launch {
-            val (groups, contacts) = withContext(Dispatchers.IO) {
-                val all = container.conversations.listConversations().map { c ->
+            val (groups, contacts, requests) = withContext(Dispatchers.IO) {
+                val all = container.conversations.listConversations().filterNot { it.pending }.map { c ->
                     val last = container.conversations.lastMessage(c.id)
                     Pair(
                         c.type,
@@ -202,14 +209,82 @@ class HomeActivity : SecureActivity() {
                 }
                 val g = all.filter { it.first == ConversationType.GROUP }.map { it.second }.sortedByDescending { it.time }
                 val c = all.filter { it.first == ConversationType.DIRECT }.map { it.second }.sortedByDescending { it.time }
-                Pair(g, c)
+                val r = container.conversations.pendingRequests()
+                    .map { req -> Pair(req, container.conversations.lastMessage(req.id)) }
+                    .sortedByDescending { (req, last) -> last?.createdAtEpochMillis ?: req.createdAtEpochMillis }
+                Triple(g, c, r)
             }
             groupAdapter.submit(groups)
             contactAdapter.submit(contacts)
             groupsEmpty.visibility = if (groups.isEmpty()) View.VISIBLE else View.GONE
             contactsEmpty.visibility = if (contacts.isEmpty()) View.VISIBLE else View.GONE
+            renderRequests(requests)
         }
     }
+
+    /** Fills the "Requests" section with anyone who messaged you first without being a saved
+     * contact (e.g. after scanning your QR code), each with Accept / Block actions. Hidden
+     * entirely when there are none. */
+    private fun renderRequests(requests: List<Pair<app.niix.core.model.Conversation, Message?>>) {
+        val section = findViewById<LinearLayout>(R.id.requests_section)
+        val list = findViewById<LinearLayout>(R.id.requests_list)
+        section.visibility = if (requests.isEmpty()) View.GONE else View.VISIBLE
+        list.removeAllViews()
+        for ((conversation, last) in requests) {
+            list.addView(requestRow(conversation, last?.let { previewOf(it) } ?: getString(R.string.no_messages)))
+        }
+    }
+
+    private fun requestRow(conversation: app.niix.core.model.Conversation, preview: String): View {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(8))
+        }
+        val text = TextView(this).apply {
+            text = "${conversation.title.take(16)}\n$preview"
+            setTextColor(resources.getColor(R.color.niix_on_surface, theme))
+            textSize = 13f
+            maxLines = 2
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        val accept = requestButton(getString(R.string.request_accept), resources.getColor(R.color.niix_green, theme)) {
+            respondToRequest(conversation.id) { container.conversations.acceptRequest(conversation.id) }
+        }
+        val block = requestButton(getString(R.string.request_block), resources.getColor(R.color.niix_danger, theme)) {
+            respondToRequest(conversation.id) { container.conversations.blockRequest(conversation.id) }
+        }
+        row.addView(text)
+        row.addView(accept, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8) })
+        row.addView(block, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8) })
+        return row
+    }
+
+    private fun requestButton(label: String, color: Int, onClick: () -> Unit) =
+        com.google.android.material.button.MaterialButton(this).apply {
+            text = label
+            isAllCaps = false
+            textSize = 12f
+            minWidth = 0
+            minimumWidth = 0
+            insetTop = 0
+            insetBottom = 0
+            setPadding(dp(14), 0, dp(14), 0)
+            cornerRadius = dp(16)
+            backgroundTintList = android.content.res.ColorStateList.valueOf(color)
+            setTextColor(resources.getColor(R.color.niix_bg, theme))
+            setOnClickListener { onClick() }
+        }
+
+    private fun respondToRequest(conversationId: String, action: suspend () -> Boolean) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) { runCatching { action() } }
+            load()
+        }
+    }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun previewOf(m: Message): String = when {
         m.deleted -> getString(R.string.message_deleted)

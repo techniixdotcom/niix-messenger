@@ -119,6 +119,13 @@ Tap + to add a contact.</string>
     <string name="group_add_to_contacts">Add to contacts</string>
     <string name="toast_added_to_contacts">%1$s added to contacts</string>
     <string name="toast_already_contact">Already in your contacts</string>
+    <string name="section_requests">◆ REQUESTS</string>
+    <string name="request_accept">Accept</string>
+    <string name="request_block">Block</string>
+    <string name="group_photo">Group photo</string>
+    <string name="group_photo_admin_only">Only a group admin can change the group photo</string>
+    <string name="group_photo_remove">Remove group photo</string>
+    <string name="group_photo_remove_confirm">Remove this group\'s photo for everyone?</string>
     <string name="search_message_match_prefix">"%1$s"</string>
     <string name="section_groups">◆ GROUPS</string>
     <string name="section_contacts">◆ CONTACTS</string>

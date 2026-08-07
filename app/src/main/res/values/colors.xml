@@ -12,6 +12,8 @@
     <color name="niix_pink">#FF3D7F</color>
     <color name="niix_bubble_out">#1C4034</color>
     <color name="niix_bubble_in">#1A212C</color>
+    <color name="niix_bubble_neutral">#161B24</color>
+    <color name="niix_message_out_text">#FFFFFF</color>
     <color name="niix_danger">#FF5A5A</color>
     <color name="niix_amber">#E5A50A</color>
     <color name="niix_divider">#1E2530</color>
