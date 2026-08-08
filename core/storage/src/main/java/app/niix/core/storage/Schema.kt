@@ -93,6 +93,7 @@ object Schema {
         const val COL_DELIVERY_STATE = "delivery_state"
         const val COL_DELETED = "deleted"
         const val COL_REMOTE_DELETABLE = "remote_deletable"
+        const val COL_DISAPPEAR_SECONDS = "disappear_seconds"
     }
 
     object Attachments {
@@ -210,7 +211,8 @@ object Schema {
             ${Messages.COL_EXPIRES_AT} INTEGER,
             ${Messages.COL_DELIVERY_STATE} TEXT NOT NULL,
             ${Messages.COL_DELETED} INTEGER NOT NULL DEFAULT 0,
-            ${Messages.COL_REMOTE_DELETABLE} INTEGER NOT NULL DEFAULT 1
+            ${Messages.COL_REMOTE_DELETABLE} INTEGER NOT NULL DEFAULT 1,
+            ${Messages.COL_DISAPPEAR_SECONDS} INTEGER
         )
         """.trimIndent(),
         "CREATE INDEX IF NOT EXISTS idx_messages_conv ON ${Messages.TABLE} (${Messages.COL_CONVERSATION_ID}, ${Messages.COL_CREATED_AT})",
@@ -251,5 +253,6 @@ object Schema {
      */
     val COLUMN_MIGRATIONS: List<Pair<String, String>> = listOf(
         Conversations.TABLE to "ALTER TABLE ${Conversations.TABLE} ADD COLUMN ${Conversations.COL_PENDING} INTEGER NOT NULL DEFAULT 0",
+        Messages.TABLE to "ALTER TABLE ${Messages.TABLE} ADD COLUMN ${Messages.COL_DISAPPEAR_SECONDS} INTEGER",
     )
 }

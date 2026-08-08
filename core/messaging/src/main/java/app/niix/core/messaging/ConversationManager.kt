@@ -126,6 +126,29 @@ class ConversationManager(
         storage.messages.listForConversation(conversationId).lastOrNull()
     }
 
+    /**
+     * Call when a conversation is actually opened/viewed. For any incoming disappearing message
+     * that hasn't started its countdown yet, this starts it now (on this device) and sends a
+     * read receipt back to whoever sent it, so their copy starts counting down too -- see the
+     * [newOutgoingMessage] / [incomingMessage] doc comments for why the countdown doesn't start
+     * any earlier than this.
+     */
+    suspend fun markConversationRead(conversationId: String) = withContext(Dispatchers.IO) {
+        val unread = storage.messages.listForConversation(conversationId).filter {
+            it.direction == MessageDirection.INCOMING && it.disappearSeconds != null && it.expiresAtEpochMillis == null
+        }
+        if (unread.isEmpty()) return@withContext
+        val nowMs = now()
+        for (message in unread) {
+            storage.messages.startExpiry(message.id, message.disappearSeconds!!, nowMs)
+            runCatching {
+                ensureSession(message.senderOnion)
+                sendWire(message.senderOnion, WireMessage.Receipt(message.conversationId, message.id, READ_RECEIPT_STATE))
+            }
+        }
+        notifyChanged()
+    }
+
     suspend fun username(): String = withContext(Dispatchers.IO) {
         storage.settings.getString(SettingsStore.KEY_USERNAME).orEmpty().ifEmpty { "Me" }
     }
@@ -743,8 +766,23 @@ class ConversationManager(
                 wire.targetMessageIds.forEach { storage.messages.markDeletedForEveryone(it) }
             is WireMessage.TimerUpdate ->
                 storage.conversations.setDisappearSeconds(resolveIncomingConversationId(wire.conversationId, fromOnion), wire.seconds)
-            is WireMessage.Receipt ->
-                runCatching { storage.messages.updateDeliveryState(wire.messageId, DeliveryState.valueOf(wire.state)) }
+            is WireMessage.Receipt -> {
+                if (wire.state == READ_RECEIPT_STATE) {
+                    // The recipient just read this message -- start its disappearing-message
+                    // countdown on our (the sender's) own copy too, now that it's confirmed
+                    // seen, rather than back when we sent it. startExpiry() only takes effect
+                    // if it isn't already running, so for a group this is simply "first read
+                    // starts it" -- later receipts from other members are no-ops.
+                    val message = storage.messages.get(wire.messageId)
+                    val duration = message?.disappearSeconds
+                    if (message != null && duration != null && message.expiresAtEpochMillis == null) {
+                        storage.messages.startExpiry(wire.messageId, duration, now())
+                        notifyChanged()
+                    }
+                } else {
+                    runCatching { storage.messages.updateDeliveryState(wire.messageId, DeliveryState.valueOf(wire.state)) }
+                }
+            }
             is WireMessage.GroupInvite -> {
                 val existing = storage.conversations.get(wire.conversationId)
                 // Only accept membership changes to an existing group from one of its admins;
@@ -930,10 +968,13 @@ class ConversationManager(
             body = body,
             attachmentId = attachmentId,
             createdAtEpochMillis = createdAt,
-            expiresAtEpochMillis = expiryFrom(conversation.disappearSeconds, createdAt),
+            // Countdown doesn't start at send time -- see markConversationRead() -- so this
+            // stays null until the recipient's read receipt starts it.
+            expiresAtEpochMillis = null,
             deliveryState = DeliveryState.PENDING,
             deleted = false,
             remoteDeletable = true,
+            disappearSeconds = conversation.disappearSeconds.takeIf { it > 0 },
         )
     }
 
@@ -948,10 +989,14 @@ class ConversationManager(
             body = body,
             attachmentId = attachmentId,
             createdAtEpochMillis = createdAt,
-            expiresAtEpochMillis = expiryFrom(expiresSeconds, createdAt),
+            // Countdown doesn't start at receive time either -- only once this device's user
+            // actually reads it, via markConversationRead(). Otherwise a disappearing message
+            // could vanish before you were ever online to see it.
+            expiresAtEpochMillis = null,
             deliveryState = DeliveryState.RECEIVED,
             deleted = false,
             remoteDeletable = true,
+            disappearSeconds = expiresSeconds.takeIf { it > 0 },
         )
     }
 
@@ -988,9 +1033,6 @@ class ConversationManager(
         storage.attachments.delete(attachmentId)
     }
 
-    private fun expiryFrom(seconds: Long, createdAt: Long): Long? =
-        if (seconds > 0) createdAt + seconds * 1000 else null
-
     private fun sha256(file: File): ByteArray {
         val digest = MessageDigest.getInstance("SHA-256")
         file.inputStream().use { input ->
@@ -1008,6 +1050,7 @@ class ConversationManager(
 
     companion object {
         private const val SELF = "self"
+        private const val READ_RECEIPT_STATE = "READ"
         private const val FRAME_MESSAGE = 1
         private const val FRAME_BUNDLE_REQUEST = 2
         private const val FRAME_BUNDLE_RESPONSE = 3

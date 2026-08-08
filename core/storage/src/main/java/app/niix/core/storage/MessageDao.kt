@@ -96,6 +96,14 @@ class MessageDao internal constructor(private val secureDatabase: SecureDatabase
         db.update(t.TABLE, values, "${t.COL_ID} = ?", arrayOf(id))
     }
 
+    /** Starts a disappearing message's countdown now -- only if it hasn't already been started
+     * (the `expires_at IS NULL` guard), so a duplicate call (e.g. a second read receipt from a
+     * group with several members) can't push the expiry back out. */
+    fun startExpiry(id: String, durationSeconds: Long, nowEpochMillis: Long) {
+        val values = ContentValues().apply { put(t.COL_EXPIRES_AT, nowEpochMillis + durationSeconds * 1000) }
+        db.update(t.TABLE, values, "${t.COL_ID} = ? AND ${t.COL_EXPIRES_AT} IS NULL", arrayOf(id))
+    }
+
     fun markDeletedForEveryone(id: String) {
         val values = ContentValues().apply {
             put(t.COL_DELETED, 1)
@@ -151,11 +159,13 @@ class MessageDao internal constructor(private val secureDatabase: SecureDatabase
         put(t.COL_DELIVERY_STATE, deliveryState.name)
         put(t.COL_DELETED, if (deleted) 1 else 0)
         put(t.COL_REMOTE_DELETABLE, if (remoteDeletable) 1 else 0)
+        if (disappearSeconds == null) putNull(t.COL_DISAPPEAR_SECONDS) else put(t.COL_DISAPPEAR_SECONDS, disappearSeconds)
     }
 
     private fun android.database.Cursor.toMessage(): Message {
         val attachmentIdx = getColumnIndexOrThrow(t.COL_ATTACHMENT_ID)
         val expiresIdx = getColumnIndexOrThrow(t.COL_EXPIRES_AT)
+        val disappearIdx = getColumnIndexOrThrow(t.COL_DISAPPEAR_SECONDS)
         return Message(
             id = getString(getColumnIndexOrThrow(t.COL_ID)),
             conversationId = getString(getColumnIndexOrThrow(t.COL_CONVERSATION_ID)),
@@ -169,6 +179,7 @@ class MessageDao internal constructor(private val secureDatabase: SecureDatabase
             deliveryState = DeliveryState.valueOf(getString(getColumnIndexOrThrow(t.COL_DELIVERY_STATE))),
             deleted = getInt(getColumnIndexOrThrow(t.COL_DELETED)) == 1,
             remoteDeletable = getInt(getColumnIndexOrThrow(t.COL_REMOTE_DELETABLE)) == 1,
+            disappearSeconds = if (isNull(disappearIdx)) null else getLong(disappearIdx),
         )
     }
 }
