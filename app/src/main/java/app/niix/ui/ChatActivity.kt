@@ -372,6 +372,9 @@ class ChatActivity : SecureActivity() {
         super.onResume()
         if (isFinishing) return
         load()
+        // Starts the disappearing-message countdown (and lets the sender know) for anything
+        // unread in this conversation -- see ConversationManager.markConversationRead().
+        lifecycleScope.launch { withContext(Dispatchers.IO) { container.conversations.markConversationRead(conversationId) } }
     }
 
     private fun load() {
