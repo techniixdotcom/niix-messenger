@@ -83,7 +83,7 @@ class NiixKeyboard(
         return Button(context).apply {
             text = label
             isAllCaps = false
-            textSize = 15f
+            textSize = 23f
             minWidth = 0
             minimumWidth = 0
             minHeight = 0
@@ -91,7 +91,7 @@ class NiixKeyboard(
             setPadding(0, 0, 0, 0)
             setTextColor(context.getColor(if (pink) R.color.niix_pink else R.color.niix_on_surface))
             setBackgroundResource(R.drawable.keyboard_key_bg)
-            layoutParams = LinearLayout.LayoutParams(0, dp(44)).also {
+            layoutParams = LinearLayout.LayoutParams(0, dp(48)).also {
                 it.weight = weight
                 it.setMargins(dp(2), dp(3), dp(2), dp(3))
             }

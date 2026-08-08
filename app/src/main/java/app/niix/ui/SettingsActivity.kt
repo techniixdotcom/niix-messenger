@@ -39,6 +39,12 @@ class SettingsActivity : SecureActivity() {
             result.data?.getStringExtra(CropActivity.EXTRA_RESULT_PATH)?.let { onProfileCropped(it) }
         }
     }
+    private val exportPicker = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/octet-stream"),
+    ) { uri -> uri?.let { promptBackupPassphrase(exporting = true, uri = it) } }
+    private val importPicker = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri -> uri?.let { promptBackupPassphrase(exporting = false, uri = it) } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,8 +120,12 @@ class SettingsActivity : SecureActivity() {
 
         findViewById<LinearLayout>(R.id.row_duress).setOnClickListener { duressDialog() }
         findViewById<LinearLayout>(R.id.row_wipe_now).setOnClickListener { wipeNowDialog() }
-        findViewById<LinearLayout>(R.id.row_export).setOnClickListener { backupDialog(true) }
-        findViewById<LinearLayout>(R.id.row_import).setOnClickListener { backupDialog(false) }
+        findViewById<LinearLayout>(R.id.row_export).setOnClickListener {
+            exportPicker.launch(backupFileName())
+        }
+        findViewById<LinearLayout>(R.id.row_import).setOnClickListener {
+            importPicker.launch(arrayOf("*/*"))
+        }
     }
 
     /** Detaches, changes, and reattaches so a programmatic state change never re-fires the
@@ -278,12 +288,30 @@ class SettingsActivity : SecureActivity() {
             .show()
     }
 
-    private fun backupDialog(exporting: Boolean) {
+    private fun backupFileName(): String {
+        val stamp = java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US).format(java.util.Date())
+        return "niix-backup-$stamp.niix"
+    }
+
+    /** Resolves the human-readable name for a content Uri (e.g. from the document picker), for
+     * display purposes only -- falls back to the raw Uri if the provider doesn't report one. */
+    private fun displayNameOf(uri: android.net.Uri): String {
+        runCatching {
+            contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (idx >= 0) return cursor.getString(idx) ?: uri.toString()
+                }
+            }
+        }
+        return uri.toString()
+    }
+
+    private fun promptBackupPassphrase(exporting: Boolean, uri: android.net.Uri) {
         val field = passwordField()
-        val file = File(getExternalFilesDir(null), "niix-backup.niix")
         AlertDialog.Builder(this)
             .setTitle(if (exporting) R.string.setting_export else R.string.setting_import)
-            .setMessage(getString(R.string.backup_path_hint, file.absolutePath))
+            .setMessage(getString(R.string.backup_path_hint, displayNameOf(uri)))
             .setView(pad(field))
             .setPositiveButton(R.string.dialog_ok) { _, _ ->
                 val chars = CharArray(field.text.length) { field.text[it] }
@@ -291,7 +319,7 @@ class SettingsActivity : SecureActivity() {
                 lifecycleScope.launch {
                     val result = withContext(Dispatchers.IO) {
                         try {
-                            if (exporting) container.backup().export(chars, file) else container.backup().import(chars, file)
+                            if (exporting) exportToUri(chars, uri) else importFromUri(chars, uri)
                             Result.success(Unit)
                         } catch (t: Throwable) { Result.failure(t) } finally { chars.fill('\u0000') }
                     }
@@ -306,6 +334,39 @@ class SettingsActivity : SecureActivity() {
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
+    }
+
+    /**
+     * [EncryptedBackup.export] writes through a real [File] (SQLCipher's export routine needs
+     * one to attach as a second database). A SAF-picked location is a content Uri, which may not
+     * correspond to any real filesystem path (cloud-backed storage, SD cards, etc.), so this
+     * exports to a private cache file first -- already fully encrypted ciphertext, safe to sit
+     * there briefly -- then streams those same bytes into the chosen location and deletes the
+     * temp file either way.
+     */
+    private fun exportToUri(passphrase: CharArray, uri: android.net.Uri) {
+        val temp = File(cacheDir, "export-${System.nanoTime()}.niix")
+        try {
+            container.backup().export(passphrase, temp)
+            val out = contentResolver.openOutputStream(uri) ?: throw java.io.IOException("Could not open the chosen location for writing")
+            out.use { temp.inputStream().use { input -> input.copyTo(it) } }
+        } finally {
+            temp.delete()
+        }
+    }
+
+    /** Mirror of [exportToUri] for the read side: stages the chosen file's bytes (still
+     * passphrase-encrypted, never plaintext) into a private cache file that [EncryptedBackup.import]
+     * can open as a real [File], then deletes it either way. */
+    private fun importFromUri(passphrase: CharArray, uri: android.net.Uri) {
+        val temp = File(cacheDir, "import-${System.nanoTime()}.niix")
+        try {
+            val input = contentResolver.openInputStream(uri) ?: throw java.io.IOException("Could not open the chosen file for reading")
+            input.use { temp.outputStream().use { out -> it.copyTo(out) } }
+            container.backup().import(passphrase, temp)
+        } finally {
+            temp.delete()
+        }
     }
 
     private fun passwordField(): EditText = EditText(this).apply {

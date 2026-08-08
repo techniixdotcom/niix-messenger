@@ -13,9 +13,23 @@
 #   ./build-niix.sh --debug [PROJECT_DIR_OR_ZIP]       # debug-signed build instead, no keystore needed
 #   ./build-niix.sh --setup-only [PROJECT_DIR_OR_ZIP]
 #   ./build-niix.sh --update [PROJECT_DIR_OR_ZIP]      # bump everything to newest STABLE, then build
+#   ./build-niix.sh --version=1.3.6b [PROJECT_DIR_OR_ZIP]     # skip the interactive version prompt
+#
+# By default, an interactive terminal is asked for the version to put on this APK (versionName,
+# the human-readable one shown in Settings/app stores -- any text works, e.g. 0.2.0 or "1.3.6 b"),
+# suggesting whatever's currently in app/build.gradle.kts. Skip the prompt with --version=TEXT, or
+# the NIIX_VERSION_NAME env var; in a non-interactive shell (e.g. CI) with neither set, the prompt
+# is skipped and the existing versionName is left as-is.
+#
+# The separate build number (versionCode, the plain integer Android uses internally to tell APKs
+# apart) is bumped by one automatically every build so installing a new APK always upgrades over
+# the last one -- you shouldn't need to think about it. Override it explicitly if you ever need
+# to with --build-number=N or NIIX_BUILD_NUMBER.
 #
 # Optional overrides (export before running):
 #   NIIX_TOOLCHAIN     install location (default: <project>/.toolchain)
+#   NIIX_VERSION_NAME  version text for the APK, same as --version
+#   NIIX_BUILD_NUMBER  build number (versionCode) for the APK, same as --build-number
 #   JDK_URL            JDK 17 tarball URL
 #   GRADLE_URL         Gradle 8.11.1 distribution URL
 #   CMDLINE_TOOLS_URL  Android command-line tools zip URL
@@ -33,6 +47,12 @@ SETUP_ONLY=0
 UPDATE=0
 DEBUG_BUILD=0
 PROJECT_ARG=""
+VERSION_NAME_ARG=""
+VERSION_NAME=""
+VERSION_NAME_STATE=""
+BUILD_NUMBER_ARG=""
+BUILD_NUMBER=""
+BUILD_NUMBER_STATE=""
 
 c_red=$'\033[31m'; c_grn=$'\033[32m'; c_ylw=$'\033[33m'; c_blu=$'\033[34m'; c_rst=$'\033[0m'
 log()  { printf '%s==>%s %s\n' "$c_blu" "$c_rst" "$*"; }
@@ -62,7 +82,9 @@ parse_args() {
             --setup-only) SETUP_ONLY=1 ;;
             --update) UPDATE=1 ;;
             --debug) DEBUG_BUILD=1 ;;
-            -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
+            --version=*) VERSION_NAME_ARG="${arg#--version=}" ;;
+            --build-number=*) BUILD_NUMBER_ARG="${arg#--build-number=}" ;;
+            -h|--help) sed -n '2,35p' "$0"; exit 0 ;;
             *) PROJECT_ARG="$arg" ;;
         esac
     done
@@ -229,14 +251,73 @@ generate_wrapper() {
     fi
 }
 
+prompt_version_name() {
+    # Resolve a concrete value from the highest-priority source available, always ending up
+    # with something real in VERSION_NAME -- it's also used to name the built APK file, so it
+    # can't be left blank even on the "nothing given, non-interactive" path.
+    local current
+    current="$(cat "$VERSION_NAME_STATE" 2>/dev/null || true)"
+    if [ -z "$current" ]; then
+        current="$(grep -oE 'versionName = versionNameInput \?: "[^"]*"' "$PROJECT_DIR/app/build.gradle.kts" 2>/dev/null | sed -E 's/.*"(.*)"/\1/' | head -1)"
+    fi
+    current="${current:-0.1.0}"
+
+    if [ -n "${NIIX_VERSION_NAME:-}" ]; then
+        VERSION_NAME="$NIIX_VERSION_NAME"
+        ok "Version: $VERSION_NAME (from NIIX_VERSION_NAME)"
+    elif [ -n "$VERSION_NAME_ARG" ]; then
+        VERSION_NAME="$VERSION_NAME_ARG"
+        ok "Version: $VERSION_NAME (from --version)"
+    elif [ ! -t 0 ]; then
+        VERSION_NAME="$current"
+        warn "Non-interactive shell and no --version/NIIX_VERSION_NAME given; using $VERSION_NAME"
+    else
+        local input
+        read -r -p "Version for this APK (versionName -- any text, e.g. 0.2.0 or '1.3.6 b') [$current]: " input < /dev/tty || true
+        VERSION_NAME="${input:-$current}"
+        ok "Version: $VERSION_NAME"
+    fi
+    printf '%s\n' "$VERSION_NAME" > "$VERSION_NAME_STATE" 2>/dev/null || true
+}
+
+resolve_build_number() {
+    if [ -n "${NIIX_BUILD_NUMBER:-}" ]; then
+        BUILD_NUMBER="$NIIX_BUILD_NUMBER"
+    elif [ -n "$BUILD_NUMBER_ARG" ]; then
+        BUILD_NUMBER="$BUILD_NUMBER_ARG"
+    else
+        # Auto-bump so a freshly built APK always installs as an upgrade over the last one,
+        # without needing to ask -- this is the plain internal integer, not the version text.
+        # Remembered across runs (rather than re-read from app/build.gradle.kts, which only
+        # ever holds the fixed fallback default, not whatever was actually last built).
+        local current
+        current="$(cat "$BUILD_NUMBER_STATE" 2>/dev/null || true)"
+        if [ -z "$current" ]; then
+            current="$(grep -oE '\} \?: [0-9]+' "$PROJECT_DIR/app/build.gradle.kts" 2>/dev/null | grep -oE '[0-9]+' | head -1)"
+        fi
+        BUILD_NUMBER=$(( ${current:-0} + 1 ))
+    fi
+    if ! [[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+        die "Build number (versionCode) must be a whole non-negative number, got: '$BUILD_NUMBER'. Version text (0.2.0, 1.3.6 b, ...) goes in --version instead."
+    fi
+    ok "Build number: $BUILD_NUMBER"
+    printf '%s\n' "$BUILD_NUMBER" > "$BUILD_NUMBER_STATE" 2>/dev/null || true
+}
+
 build_apk() {
+    local -a version_args=("-PversionCode=$BUILD_NUMBER")
+    if [ -n "$VERSION_NAME" ]; then
+        version_args+=("-PversionName=$VERSION_NAME")
+    fi
+
     if [ "$DEBUG_BUILD" -eq 1 ]; then
         log "Building :app:assembleDebug (--debug requested; not for real use, no signing needed)"
         JAVA_HOME="$JAVA_HOME" ANDROID_HOME="$ANDROID_SDK_ROOT" ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
-            "${GRADLE_CMD:-$GRADLE_BIN}" -p "$PROJECT_DIR" --no-daemon :app:assembleDebug
+            "${GRADLE_CMD:-$GRADLE_BIN}" -p "$PROJECT_DIR" --no-daemon "${version_args[@]}" :app:assembleDebug
 
         local apk="$PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
         [ -f "$apk" ] || die "Build finished but APK not found at $apk"
+        apk="$(rename_apk "$apk")"
         local size; size="$(du -h "$apk" | awk '{print $1}')"
         printf '\n%s================================================================%s\n' "$c_grn" "$c_rst"
         ok "Debug APK built: $apk ($size)"
@@ -251,15 +332,27 @@ build_apk() {
 
     log "Building :app:assembleRelease (first run downloads dependencies; this can take a while)"
     JAVA_HOME="$JAVA_HOME" ANDROID_HOME="$ANDROID_SDK_ROOT" ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
-        "${GRADLE_CMD:-$GRADLE_BIN}" -p "$PROJECT_DIR" --no-daemon :app:assembleRelease
+        "${GRADLE_CMD:-$GRADLE_BIN}" -p "$PROJECT_DIR" --no-daemon "${version_args[@]}" :app:assembleRelease
 
     local apk="$PROJECT_DIR/app/build/outputs/apk/release/app-release.apk"
     [ -f "$apk" ] || die "Build finished but APK not found at $apk"
+    apk="$(rename_apk "$apk")"
     local size; size="$(du -h "$apk" | awk '{print $1}')"
     printf '\n%s================================================================%s\n' "$c_grn" "$c_rst"
     ok "Signed release APK built: $apk ($size)"
     printf '\nInstall on a connected device (USB debugging on):\n  %s/platform-tools/adb install -r "%s"\n' "$ANDROID_SDK_ROOT" "$apk"
     printf '\nRebuild later without re-running setup:\n  source "%s/env.sh" && (cd "%s" && gradle :app:assembleRelease)\n' "$TOOLCHAIN" "$PROJECT_DIR"
+}
+
+# Renames Gradle's default app-release.apk/app-debug.apk to niix-<version>.apk, in place,
+# printing the new path. "/" is the only character truly unsafe in a filename here (spaces are
+# fine on Linux/most filesystems) so it's the only one stripped out of the version text.
+rename_apk() {
+    local original="$1"
+    local safe_version; safe_version="$(printf '%s' "$VERSION_NAME" | tr '/' '-')"
+    local renamed; renamed="$(dirname "$original")/niix-${safe_version}.apk"
+    mv -f "$original" "$renamed"
+    printf '%s' "$renamed"
 }
 
 update_versions() {
@@ -299,6 +392,8 @@ run() {
     mkdir -p "$TOOLCHAIN"
     TOOLCHAIN="$(cd "$TOOLCHAIN" && pwd -P)"
     DL="$TOOLCHAIN/downloads"; mkdir -p "$DL"
+    VERSION_NAME_STATE="$TOOLCHAIN/last-version-name"
+    BUILD_NUMBER_STATE="$TOOLCHAIN/last-build-number"
     log "Toolchain: $TOOLCHAIN"
 
     install_jdk
@@ -318,6 +413,8 @@ run() {
     if [ "$UPDATE" -eq 1 ]; then
         update_versions
     fi
+    prompt_version_name
+    resolve_build_number
     build_apk
 }
 

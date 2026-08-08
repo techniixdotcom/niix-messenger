@@ -45,7 +45,7 @@ class MyCodeActivity : SecureActivity() {
             if (data.onion != null) {
                 shareCode = "${data.onion}|${data.identityCode}"
                 findViewById<TextView>(R.id.share_code).text = shareCode
-                QrCodes.encode(shareCode, 640)?.let { findViewById<ImageView>(R.id.qr).setImageBitmap(it) }
+                QrCodes.encode(shareCode, 1024)?.let { findViewById<ImageView>(R.id.qr).setImageBitmap(it) }
             } else {
                 findViewById<TextView>(R.id.share_code).text = getString(R.string.share_code_pending)
             }

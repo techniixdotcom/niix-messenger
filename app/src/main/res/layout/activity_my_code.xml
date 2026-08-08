@@ -26,14 +26,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:padding="24dp">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="24dp">
 
             <ImageView
                 android:id="@+id/qr"
-                android:layout_width="240dp"
-                android:layout_height="240dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
                 android:background="#FFFFFF"
-                android:padding="8dp"
+                android:padding="16dp"
                 android:contentDescription="@string/menu_my_code" />
 
             <TextView

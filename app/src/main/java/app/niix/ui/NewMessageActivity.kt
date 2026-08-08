@@ -28,6 +28,12 @@ class NewMessageActivity : SecureActivity() {
 
     private lateinit var contactNameField: EditText
     private lateinit var shareCodeField: EditText
+    private lateinit var keyboardController: NiixKeyboardController
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && ::keyboardController.isInitialized) keyboardController.reassertOnWindowFocus()
+    }
 
     private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
         result.contents?.let { code ->
@@ -44,6 +50,7 @@ class NewMessageActivity : SecureActivity() {
         findViewById<MaterialToolbar>(R.id.toolbar).setNavigationOnClickListener { finish() }
 
         val controller = NiixKeyboardController(this, findViewById<LinearLayout>(R.id.keyboard_panel))
+        keyboardController = controller
 
         contactNameField = NiixEditField.create(this, getString(R.string.hint_contact_name))
         findViewById<FrameLayout>(R.id.contact_name_container).addView(

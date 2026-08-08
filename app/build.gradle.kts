@@ -16,6 +16,16 @@ if (hasReleaseKeystore) {
     FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
 
+// Version can be set per-build without editing this file:
+//   ./gradlew assembleRelease -PversionName=1.2.0 -PversionCode=5
+// or via environment variables (handy in CI): NIIX_VERSION_NAME / NIIX_VERSION_CODE.
+// Falls back to the defaults below when neither is given.
+val versionNameInput = (project.findProperty("versionName") as String?) ?: System.getenv("NIIX_VERSION_NAME")
+val versionCodeInput = (project.findProperty("versionCode") as String?) ?: System.getenv("NIIX_VERSION_CODE")
+val resolvedVersionCode = versionCodeInput?.let {
+    it.toIntOrNull() ?: throw GradleException("Invalid versionCode '$it' -- must be a whole number")
+} ?: 1
+
 android {
     namespace = "app.niix"
     compileSdk = 35
@@ -24,8 +34,8 @@ android {
         applicationId = "app.niix"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = resolvedVersionCode
+        versionName = versionNameInput ?: "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {

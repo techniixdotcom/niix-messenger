@@ -62,6 +62,16 @@ class ChatActivity : SecureActivity() {
     private lateinit var searchCount: TextView
     private var searchMatchPositions: List<Int> = emptyList()
     private var searchMatchIndex: Int = -1
+    private lateinit var inputKeyboardController: NiixKeyboardController
+    private var renameKeyboardController: NiixKeyboardController? = null
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            if (::inputKeyboardController.isInitialized) inputKeyboardController.reassertOnWindowFocus()
+            renameKeyboardController?.reassertOnWindowFocus()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +99,7 @@ class ChatActivity : SecureActivity() {
 
         val input = findViewById<EditText>(R.id.input)
         val keyboardPanel = findViewById<LinearLayout>(R.id.keyboard_panel)
-        NiixKeyboardController(this, keyboardPanel).attach(input)
+        inputKeyboardController = NiixKeyboardController(this, keyboardPanel).apply { attach(input) }
 
         findViewById<ImageButton>(R.id.send).setOnClickListener {
             val text = input.text.toString().trim()
@@ -428,7 +438,7 @@ class ChatActivity : SecureActivity() {
             addView(keyboardPanel)
         }
 
-        NiixKeyboardController(this, keyboardPanel).attach(field)
+        renameKeyboardController = NiixKeyboardController(this, keyboardPanel).apply { attach(field) }
 
         saveButton.setOnClickListener {
             val newName = field.text.toString().trim()
@@ -444,6 +454,7 @@ class ChatActivity : SecureActivity() {
         }
 
         sheet.setContentView(content)
+        sheet.setOnDismissListener { renameKeyboardController = null }
         sheet.show()
         field.requestFocus()
     }

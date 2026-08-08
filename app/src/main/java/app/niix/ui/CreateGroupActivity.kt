@@ -24,7 +24,13 @@ class CreateGroupActivity : SecureActivity() {
     private val boxes = mutableListOf<CheckBox>()
     private lateinit var groupNameField: EditText
     private lateinit var createButton: MaterialButton
+    private lateinit var keyboardController: NiixKeyboardController
     private var creating = false
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && ::keyboardController.isInitialized) keyboardController.reassertOnWindowFocus()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +42,7 @@ class CreateGroupActivity : SecureActivity() {
             groupNameField,
             FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT),
         )
-        NiixKeyboardController(this, findViewById<LinearLayout>(R.id.keyboard_panel)).attach(groupNameField)
+        keyboardController = NiixKeyboardController(this, findViewById<LinearLayout>(R.id.keyboard_panel)).apply { attach(groupNameField) }
         loadContacts()
     }
 
