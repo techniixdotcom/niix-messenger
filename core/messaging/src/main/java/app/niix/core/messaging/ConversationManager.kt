@@ -742,7 +742,7 @@ class ConversationManager(
             is WireMessage.DeleteForEveryone ->
                 wire.targetMessageIds.forEach { storage.messages.markDeletedForEveryone(it) }
             is WireMessage.TimerUpdate ->
-                storage.conversations.setDisappearSeconds(wire.conversationId, wire.seconds)
+                storage.conversations.setDisappearSeconds(resolveIncomingConversationId(wire.conversationId, fromOnion), wire.seconds)
             is WireMessage.Receipt ->
                 runCatching { storage.messages.updateDeliveryState(wire.messageId, DeliveryState.valueOf(wire.state)) }
             is WireMessage.GroupInvite -> {
