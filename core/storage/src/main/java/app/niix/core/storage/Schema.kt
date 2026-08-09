@@ -70,6 +70,7 @@ object Schema {
         const val COL_DISAPPEAR_SECONDS = "disappear_seconds"
         const val COL_CREATED_AT = "created_at"
         const val COL_PENDING = "pending"
+        const val COL_EPOCH = "epoch"
     }
 
     object GroupMembers {
@@ -118,6 +119,17 @@ object Schema {
     object Blocked {
         const val TABLE = "blocked"
         const val COL_ONION = "onion_address"
+    }
+
+    object PendingGroupInvites {
+        const val TABLE = "pending_group_invites"
+        const val COL_CONVERSATION_ID = "conversation_id"
+        const val COL_INVITER_ONION = "inviter_onion"
+        const val COL_TITLE = "title"
+        const val COL_MEMBERS = "members"
+        const val COL_ADMINS = "admins"
+        const val COL_RECEIVED_AT = "received_at"
+        const val COL_EPOCH = "epoch"
     }
 
     val DDL: List<String> = listOf(
@@ -187,7 +199,8 @@ object Schema {
             ${Conversations.COL_TITLE} TEXT NOT NULL,
             ${Conversations.COL_DISAPPEAR_SECONDS} INTEGER NOT NULL DEFAULT 0,
             ${Conversations.COL_CREATED_AT} INTEGER NOT NULL,
-            ${Conversations.COL_PENDING} INTEGER NOT NULL DEFAULT 0
+            ${Conversations.COL_PENDING} INTEGER NOT NULL DEFAULT 0,
+            ${Conversations.COL_EPOCH} INTEGER NOT NULL DEFAULT 0
         )
         """.trimIndent(),
         """
@@ -241,6 +254,17 @@ object Schema {
             ${Blocked.COL_ONION} TEXT PRIMARY KEY
         )
         """.trimIndent(),
+        """
+        CREATE TABLE IF NOT EXISTS ${PendingGroupInvites.TABLE} (
+            ${PendingGroupInvites.COL_CONVERSATION_ID} TEXT PRIMARY KEY,
+            ${PendingGroupInvites.COL_INVITER_ONION} TEXT NOT NULL,
+            ${PendingGroupInvites.COL_TITLE} TEXT NOT NULL,
+            ${PendingGroupInvites.COL_MEMBERS} TEXT NOT NULL,
+            ${PendingGroupInvites.COL_ADMINS} TEXT NOT NULL,
+            ${PendingGroupInvites.COL_RECEIVED_AT} INTEGER NOT NULL,
+            ${PendingGroupInvites.COL_EPOCH} INTEGER NOT NULL DEFAULT 1
+        )
+        """.trimIndent(),
     )
 
     /**
@@ -253,6 +277,7 @@ object Schema {
      */
     val COLUMN_MIGRATIONS: List<Pair<String, String>> = listOf(
         Conversations.TABLE to "ALTER TABLE ${Conversations.TABLE} ADD COLUMN ${Conversations.COL_PENDING} INTEGER NOT NULL DEFAULT 0",
+        Conversations.TABLE to "ALTER TABLE ${Conversations.TABLE} ADD COLUMN ${Conversations.COL_EPOCH} INTEGER NOT NULL DEFAULT 0",
         Messages.TABLE to "ALTER TABLE ${Messages.TABLE} ADD COLUMN ${Messages.COL_DISAPPEAR_SECONDS} INTEGER",
     )
 }

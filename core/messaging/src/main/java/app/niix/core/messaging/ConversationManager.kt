@@ -15,6 +15,7 @@ import app.niix.core.model.MessageDirection
 import app.niix.core.model.MessageType
 import app.niix.core.model.OnionAddress
 import app.niix.core.model.TrustState
+import app.niix.core.storage.PendingGroupInvite
 import app.niix.core.storage.SecureStorage
 import app.niix.core.storage.SettingsStore
 import app.niix.core.transport.DuplexConnection
@@ -57,6 +58,12 @@ class ConversationManager(
 
     private val _incoming = MutableSharedFlow<IncomingNotice>(extraBufferCapacity = 32)
     val incoming: SharedFlow<IncomingNotice> = _incoming.asSharedFlow()
+
+    // Caps total attachment bytes accepted from unauthenticated (pre-session) connections per
+    // rolling minute -- see the FRAME_ATTACHMENT branch of handleConnection(). 200MB/minute
+    // comfortably covers legitimate use (a couple of near-max-size attachments) while bounding
+    // how much disk a flood of forged-but-otherwise-valid attachment frames can burn through.
+    private val attachmentByteLimiter = SlidingWindowLimiter(maxWeight = 200L * 1024 * 1024, windowMillis = 60_000)
 
     private fun emitIncoming(conversationId: String, sender: String, preview: String) {
         val title = storage.conversations.get(conversationId)?.title ?: sender.take(12)
@@ -122,6 +129,41 @@ class ConversationManager(
         storage.messages.listForConversation(conversationId)
     }
 
+    /** Group invites from a conversationId we've never seen before, held pending explicit
+     * accept/block -- see the GroupInvite branch of [dispatch]. */
+    suspend fun pendingGroupInvites(): List<PendingGroupInvite> = withContext(Dispatchers.IO) {
+        storage.pendingGroupInvites.list()
+    }
+
+    /** Accepts a pending group invite: only now does the group and its membership list get
+     * written locally. Returns false if there's no such pending invite. */
+    suspend fun acceptGroupInvite(conversationId: String): Boolean = withContext(Dispatchers.IO) {
+        val invite = storage.pendingGroupInvites.get(conversationId) ?: return@withContext false
+        storage.conversations.upsert(
+            Conversation(
+                id = conversationId,
+                type = ConversationType.GROUP,
+                title = invite.title,
+                disappearSeconds = 0,
+                createdAtEpochMillis = now(),
+                epoch = invite.epoch,
+            ),
+        )
+        storage.members.replaceAll(conversationId, invite.members, invite.admins)
+        storage.pendingGroupInvites.delete(conversationId)
+        notifyChanged()
+        true
+    }
+
+    /** Rejects a pending group invite: discards it without ever having written any membership
+     * data (see the GroupInvite branch of [dispatch] -- none was written to begin with). */
+    suspend fun rejectGroupInvite(conversationId: String): Boolean = withContext(Dispatchers.IO) {
+        val existed = storage.pendingGroupInvites.get(conversationId) != null
+        storage.pendingGroupInvites.delete(conversationId)
+        if (existed) notifyChanged()
+        existed
+    }
+
     suspend fun lastMessage(conversationId: String): Message? = withContext(Dispatchers.IO) {
         storage.messages.listForConversation(conversationId).lastOrNull()
     }
@@ -165,19 +207,67 @@ class ConversationManager(
         } catch (_: Exception) {
             return@withContext
         }
+        val nowMs = now()
         for (msg in pending) {
+            if (msg.deleted) continue
             val conversation = storage.conversations.get(msg.conversationId) ?: continue
-            if (conversation.type != ConversationType.DIRECT || msg.deleted || msg.type != MessageType.TEXT) continue
-            val wire = WireMessage.Text(conversation.id, msg.id, selfOnion(), msg.body, conversation.disappearSeconds)
+
+            // Give up after a while rather than retrying (and staying silently PENDING)
+            // forever -- surfaces as a distinct FAILED state the person can actually see.
+            if (nowMs - msg.createdAtEpochMillis > MAX_PENDING_AGE_MILLIS) {
+                storage.messages.updateDeliveryState(msg.id, DeliveryState.FAILED)
+                notifyChanged()
+                continue
+            }
+
             val delivered = try {
-                ensureSession(conversation.id)
-                deliverToConversation(conversation, wire)
+                when (msg.type) {
+                    MessageType.TEXT -> {
+                        val wire = WireMessage.Text(conversation.id, msg.id, selfOnion(), msg.body, conversation.disappearSeconds)
+                        if (conversation.type == ConversationType.DIRECT) ensureSession(conversation.id)
+                        deliverToConversation(conversation, wire)
+                    }
+                    MessageType.ATTACHMENT -> retryAttachment(conversation, msg)
+                    MessageType.SYSTEM -> false
+                }
             } catch (_: Exception) {
                 false
             }
             if (delivered) {
                 storage.messages.updateDeliveryState(msg.id, DeliveryState.DELIVERED)
                 notifyChanged()
+            }
+        }
+    }
+
+    /**
+     * Retries a PENDING attachment message: re-announces it via AttachmentOffer, then re-pushes
+     * the raw encrypted blob via [pushAttachmentBlob] -- for a group, to every member who hasn't
+     * gotten it, same as a first send now does.
+     */
+    private suspend fun retryAttachment(conversation: Conversation, msg: Message): Boolean {
+        val attachmentId = msg.attachmentId ?: return false
+        val attachment = storage.attachments.get(attachmentId) ?: return false
+        val wire = WireMessage.AttachmentOffer(
+            conversation.id, msg.id, selfOnion(), attachmentId, attachment.mimeType,
+            attachment.sizeBytes, attachment.encKey, attachment.digest, conversation.disappearSeconds,
+        )
+        if (conversation.type == ConversationType.DIRECT) ensureSession(conversation.id)
+        val offered = deliverToConversation(conversation, wire)
+        if (!offered) return false
+        val encFile = File(attachment.filePath)
+        if (!encFile.isFile) return false
+        return when (conversation.type) {
+            ConversationType.DIRECT -> runCatching { sendAttachmentBlob(conversation.id, attachmentId, encFile) }.getOrDefault(false)
+            ConversationType.GROUP -> {
+                val recipients = storage.members.listForConversation(conversation.id)
+                    .map { it.memberOnion.value }
+                    .filter { it != selfOnion() }
+                var anySucceeded = false
+                recipients.forEach { onion ->
+                    runCatching { if (sendAttachmentBlob(onion, attachmentId, encFile)) anySucceeded = true }
+                }
+                anySucceeded
             }
         }
     }
@@ -279,6 +369,15 @@ class ConversationManager(
         crypto.safetyNumber(onion, selfOnion())
     }
 
+    /** Null if [onion] isn't a saved contact yet (e.g. a still-pending message request -- which
+     * is, by definition, always unverified: TOFU just happened and no safety-number check has
+     * occurred). Used to surface an "unverified identity" indicator in the UI -- see Item 6:
+     * TOFU itself isn't a bug, but the app wasn't telling the person when they were relying on
+     * it versus an explicitly confirmed identity. */
+    suspend fun trustState(onion: String): TrustState? = withContext(Dispatchers.IO) {
+        storage.contacts.get(onion)?.trustState
+    }
+
     /**
      * Saves a group member as a direct contact, so they show up in the left-edge contacts
      * drawer and a private chat can be started with them outside the group. Returns false if
@@ -309,13 +408,14 @@ class ConversationManager(
                 title = title,
                 disappearSeconds = 0,
                 createdAtEpochMillis = now(),
+                epoch = 1,
             )
             storage.conversations.upsert(conversation)
             val self = selfOnion()
             val allMembers = (memberOnions + self).distinct()
             val admins = listOf(self)
             storage.members.replaceAll(conversationId, allMembers, admins)
-            val invite = WireMessage.GroupInvite(conversationId, title, allMembers, admins)
+            val invite = WireMessage.GroupInvite(conversationId, title, allMembers, admins, epoch = 1)
             memberOnions.forEach { runCatching { ensureSession(it); sendWire(it, invite) } }
             conversation
         }
@@ -497,7 +597,7 @@ class ConversationManager(
             .filter { it.memberOnion.value != self }
         val allOnions = remainingAfterPromotion.map { it.memberOnion.value }
         val admins = remainingAfterPromotion.filter { it.role == GroupRole.ADMIN }.map { it.memberOnion.value }
-        val invite = WireMessage.GroupInvite(conversationId, conversation.title, allOnions, admins)
+        val invite = WireMessage.GroupInvite(conversationId, conversation.title, allOnions, admins, epoch = conversation.epoch + 1)
         remaining.forEach { runCatching { ensureSession(it.memberOnion.value); sendWire(it.memberOnion.value, invite) } }
         storage.attachments.listForConversation(conversationId).forEach { runCatching { File(it.filePath).delete() } }
         storage.attachments.deleteForConversation(conversationId)
@@ -513,7 +613,9 @@ class ConversationManager(
         val members = storage.members.listForConversation(conversationId)
         val allOnions = members.map { it.memberOnion.value }
         val admins = members.filter { it.role == GroupRole.ADMIN }.map { it.memberOnion.value }
-        val invite = WireMessage.GroupInvite(conversationId, conversation.title, allOnions, admins)
+        val nextEpoch = conversation.epoch + 1
+        storage.conversations.setEpoch(conversationId, nextEpoch)
+        val invite = WireMessage.GroupInvite(conversationId, conversation.title, allOnions, admins, epoch = nextEpoch)
         allOnions.filter { it != selfOnion() }.forEach { runCatching { ensureSession(it); sendWire(it, invite) } }
         notifyChanged()
     }
@@ -567,12 +669,37 @@ class ConversationManager(
             } catch (_: Exception) {
                 false
             }
-            if (delivered && conversation.type == ConversationType.DIRECT) {
-                runCatching { sendAttachmentBlob(conversation.id, attachmentId, encryptedFile) }
+            if (delivered) {
+                runCatching { pushAttachmentBlob(conversation, attachmentId, encryptedFile) }
             }
             finalizeDelivery(message.id, delivered)
             message
         }
+
+    /**
+     * Pushes an attachment's raw encrypted bytes to whoever needs them: the one peer for a
+     * DIRECT chat, or every other member for a GROUP. Previously this only ever ran for DIRECT
+     * conversations -- a group attachment's metadata offer went out to every member, but the
+     * actual file bytes never did, so group attachments could never actually be downloaded.
+     * Fan-out here is best-effort per member, same as deliverToConversation()'s existing
+     * semantics for a group text message: one member's connection being unreachable doesn't
+     * block the others from getting the file.
+     */
+    private suspend fun pushAttachmentBlob(conversation: Conversation, attachmentId: String, encryptedFile: File) {
+        when (conversation.type) {
+            ConversationType.DIRECT -> {
+                sendAttachmentBlob(conversation.id, attachmentId, encryptedFile)
+                Unit
+            }
+            ConversationType.GROUP -> {
+                val recipients = storage.members.listForConversation(conversation.id)
+                    .map { it.memberOnion.value }
+                    .filter { it != selfOnion() }
+                recipients.forEach { onion -> runCatching { sendAttachmentBlob(onion, attachmentId, encryptedFile) } }
+                Unit
+            }
+        }
+    }
 
     private suspend fun sendAttachmentBlob(toOnion: String, attachmentId: String, encFile: File): Boolean =
         transport.connect(OnionAddress.parse(toOnion), servicePort).use { connection ->
@@ -719,7 +846,7 @@ class ConversationManager(
         }
         return@withContext try {
             val plaintext = crypto.decrypt(fromOnion, ciphertext)
-            dispatch(fromOnion, WireCodec.decode(plaintext))
+            dispatch(fromOnion, WireCodec.decode(MessagePadding.unpad(plaintext)))
             notifyChanged()
             true
         } catch (_: Exception) {
@@ -785,20 +912,39 @@ class ConversationManager(
             }
             is WireMessage.GroupInvite -> {
                 val existing = storage.conversations.get(wire.conversationId)
-                // Only accept membership changes to an existing group from one of its admins;
-                // the first invite (group not yet known) is always accepted.
-                val authorized = existing == null || storage.members.isAdmin(wire.conversationId, fromOnion)
-                if (authorized) {
-                    storage.conversations.upsert(
-                        Conversation(
-                            wire.conversationId,
-                            ConversationType.GROUP,
-                            wire.title,
-                            existing?.disappearSeconds ?: 0,
-                            existing?.createdAtEpochMillis ?: now(),
-                        ),
-                    )
-                    storage.members.replaceAll(wire.conversationId, wire.members, wire.admins)
+                if (existing == null) {
+                    // Never seen this group before: do NOT create it or write any membership
+                    // data automatically -- that would let any peer fabricate a "group"
+                    // containing arbitrary onion addresses (including ones we already trust)
+                    // and have it silently planted. Hold it as a pending invite instead; only
+                    // acceptGroupInvite() (an explicit user action) ever writes to
+                    // conversations/group_members for it.
+                    val existingPending = storage.pendingGroupInvites.get(wire.conversationId)
+                    if (existingPending == null || wire.epoch >= existingPending.epoch) {
+                        storage.pendingGroupInvites.upsert(
+                            PendingGroupInvite(
+                                conversationId = wire.conversationId,
+                                inviterOnion = fromOnion,
+                                title = wire.title,
+                                members = wire.members,
+                                admins = wire.admins,
+                                receivedAtEpochMillis = now(),
+                                epoch = wire.epoch,
+                            ),
+                        )
+                        notifyChanged()
+                    }
+                } else if (existing.type == ConversationType.GROUP) {
+                    // Known group: only an already-recorded admin may push membership changes,
+                    // and only if this invite is newer than the last one we applied -- an old,
+                    // previously-valid invite (e.g. captured before a member was removed) must
+                    // not be replayable back into a stale membership state.
+                    val authorized = storage.members.isAdmin(wire.conversationId, fromOnion)
+                    if (authorized && wire.epoch > existing.epoch) {
+                        storage.conversations.upsert(existing.copy(title = wire.title, epoch = wire.epoch))
+                        storage.members.replaceAll(wire.conversationId, wire.members, wire.admins)
+                        notifyChanged()
+                    }
                 }
             }
             is WireMessage.ProfileUpdate -> {
@@ -830,7 +976,7 @@ class ConversationManager(
     }
 
     private suspend fun sendWire(toOnion: String, wire: WireMessage): Boolean = try {
-        val ciphertext = crypto.encrypt(toOnion, WireCodec.encode(wire))
+        val ciphertext = crypto.encrypt(toOnion, MessagePadding.pad(WireCodec.encode(wire)))
         transportSend(toOnion, ciphertext)
     } catch (_: Exception) {
         false
@@ -871,9 +1017,51 @@ class ConversationManager(
                     val attachmentId = String(idBytes, Charsets.UTF_8)
                     val blobLen = input.readLong()
                     if (blobLen < 0 || blobLen > MAX_ATTACHMENT_BYTES) return@withContext
+
+                    // Rejects anything that isn't a plain UUID before it ever reaches a File
+                    // constructor. This is the only thing standing between an attacker-supplied
+                    // string and a path-traversal write -- e.g. an attachmentId of
+                    // "../../../../data/data/app.niix/databases/x" -- since this frame is read
+                    // and processed before any Signal decryption or identity check happens.
+                    if (!ATTACHMENT_ID_PATTERN.matches(attachmentId)) return@withContext
+
+                    // Only accept bytes for an attachment we already know about: one whose
+                    // encrypted AttachmentOffer already arrived over an authenticated Signal
+                    // session and created a PENDING row (see the AttachmentOffer branch of
+                    // dispatch()). Without this check, anyone who can open a raw connection to
+                    // this onion service -- no session, no identity check, not even a known
+                    // contact -- could write arbitrary blobs to disk.
+                    val pending = storage.attachments.get(attachmentId)
+                    if (pending == null || pending.state != AttachmentState.PENDING) return@withContext
+
+                    // Caps total attachment bytes accepted from unauthenticated connections per
+                    // rolling window, independent of the connection-count limiter in
+                    // MessageReceiver -- that alone wouldn't stop a moderate connection rate each
+                    // carrying a near-max-size attachment from filling the disk.
+                    if (!attachmentByteLimiter.allow(weight = blobLen)) return@withContext
+
                     attachmentsDir.mkdirs()
                     val dest = File(attachmentsDir, "$attachmentId.enc")
-                    dest.outputStream().use { copyExactly(input, it, blobLen) }
+                    // Defense in depth: even though the UUID check above already rules out
+                    // traversal characters, canonicalize and re-verify the resolved path is
+                    // still inside attachmentsDir before writing anything.
+                    val attachmentsRoot = attachmentsDir.canonicalFile
+                    val canonicalDest = dest.canonicalFile
+                    if (!canonicalDest.path.startsWith(attachmentsRoot.path + File.separator)) return@withContext
+
+                    canonicalDest.outputStream().use { copyExactly(input, it, blobLen) }
+
+                    // Verify the bytes actually written match the digest promised in the
+                    // AttachmentOffer before marking this COMPLETE or surfacing it to the user.
+                    val expectedDigest = pending.digest
+                    if (expectedDigest != null && !sha256(canonicalDest).contentEquals(expectedDigest)) {
+                        canonicalDest.delete()
+                        storage.attachments.updateState(attachmentId, AttachmentState.FAILED)
+                        notifyChanged()
+                        return@withContext
+                    }
+
+                    storage.attachments.updateState(attachmentId, AttachmentState.COMPLETE)
                     writeFrame(connection.output, FRAME_ACK, selfOnion(), ByteArray(0))
                     notifyChanged()
                 }
@@ -1051,6 +1239,11 @@ class ConversationManager(
     companion object {
         private const val SELF = "self"
         private const val READ_RECEIPT_STATE = "READ"
+        // How long a message can sit PENDING before retryPending() gives up and marks it
+        // FAILED instead of retrying forever with no visible end state.
+        private const val MAX_PENDING_AGE_MILLIS = 7L * 24 * 60 * 60 * 1000
+        private val ATTACHMENT_ID_PATTERN =
+            Regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
         private const val FRAME_MESSAGE = 1
         private const val FRAME_BUNDLE_REQUEST = 2
         private const val FRAME_BUNDLE_RESPONSE = 3

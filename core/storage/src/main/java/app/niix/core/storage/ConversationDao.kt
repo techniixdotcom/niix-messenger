@@ -18,12 +18,18 @@ class ConversationDao internal constructor(private val secureDatabase: SecureDat
             put(t.COL_DISAPPEAR_SECONDS, conversation.disappearSeconds)
             put(t.COL_CREATED_AT, conversation.createdAtEpochMillis)
             put(t.COL_PENDING, if (conversation.pending) 1 else 0)
+            put(t.COL_EPOCH, conversation.epoch)
         }
         db.insertWithOnConflict(t.TABLE, null, values, SQLiteDatabase.CONFLICT_REPLACE)
     }
 
     fun setPending(id: String, pending: Boolean) {
         val values = ContentValues().apply { put(t.COL_PENDING, if (pending) 1 else 0) }
+        db.update(t.TABLE, values, "${t.COL_ID} = ?", arrayOf(id))
+    }
+
+    fun setEpoch(id: String, epoch: Long) {
+        val values = ContentValues().apply { put(t.COL_EPOCH, epoch) }
         db.update(t.TABLE, values, "${t.COL_ID} = ?", arrayOf(id))
     }
 
@@ -57,5 +63,6 @@ class ConversationDao internal constructor(private val secureDatabase: SecureDat
         disappearSeconds = getLong(getColumnIndexOrThrow(t.COL_DISAPPEAR_SECONDS)),
         createdAtEpochMillis = getLong(getColumnIndexOrThrow(t.COL_CREATED_AT)),
         pending = getInt(getColumnIndexOrThrow(t.COL_PENDING)) != 0,
+        epoch = getLong(getColumnIndexOrThrow(t.COL_EPOCH)),
     )
 }

@@ -36,6 +36,10 @@ sealed class WireMessage {
         val title: String,
         val members: List<String>,
         val admins: List<String>,
+        /** Monotonic counter, incremented on every membership-changing action (creation, add,
+         * remove, promote/demote). Lets a recipient reject a replayed older invite -- e.g. one
+         * captured before a member was removed -- rather than reprocessing it as current. */
+        val epoch: Long = 1,
     ) : WireMessage()
 
     data class AttachmentOffer(
@@ -106,6 +110,7 @@ object WireCodec {
                     s.writeUTF(message.title)
                     writeStringList(s, message.members)
                     writeStringList(s, message.admins)
+                    s.writeLong(message.epoch)
                 }
                 is WireMessage.AttachmentOffer -> {
                     s.writeByte(TYPE_ATTACHMENT)
@@ -160,6 +165,7 @@ object WireCodec {
                     title = s.readUTF(),
                     members = readStringList(s),
                     admins = readStringList(s),
+                    epoch = s.readLong(),
                 )
                 TYPE_ATTACHMENT -> WireMessage.AttachmentOffer(
                     conversationId = s.readUTF(),

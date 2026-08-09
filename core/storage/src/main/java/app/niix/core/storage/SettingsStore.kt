@@ -40,5 +40,7 @@ class SettingsStore internal constructor(private val secureDatabase: SecureDatab
         const val KEY_BATTERY_ASKED = "battery_asked"
         const val KEY_ALLOW_SCREENSHOTS = "allow_screenshots"
         const val KEY_PROFILE_KEY = "profile_key"
+        const val KEY_UPDATE_CHECK_ENABLED = "update_check_enabled"
+        const val KEY_LAST_UPDATE_CHECK_AT = "last_update_check_at"
     }
 }
