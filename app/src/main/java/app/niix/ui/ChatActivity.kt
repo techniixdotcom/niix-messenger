@@ -375,6 +375,20 @@ class ChatActivity : SecureActivity() {
         // Starts the disappearing-message countdown (and lets the sender know) for anything
         // unread in this conversation -- see ConversationManager.markConversationRead().
         lifecycleScope.launch { withContext(Dispatchers.IO) { container.conversations.markConversationRead(conversationId) } }
+        updateTrustIndicator()
+    }
+
+    /** Shows a persistent warning in the toolbar for a DIRECT chat whose identity has only ever
+     * been trust-on-first-use, not confirmed via an explicit safety-number check. */
+    private fun updateTrustIndicator() {
+        if (isGroup) return
+        lifecycleScope.launch {
+            val trusted = withContext(Dispatchers.IO) {
+                container.conversations.trustState(conversationId) == app.niix.core.model.TrustState.VERIFIED
+            }
+            findViewById<MaterialToolbar>(R.id.toolbar).subtitle =
+                if (trusted) null else getString(R.string.unverified_indicator)
+        }
     }
 
     private fun load() {
@@ -503,6 +517,7 @@ class ChatActivity : SecureActivity() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) { runCatching { container.conversations.markVerified(conversationId) } }
             Toast.makeText(this@ChatActivity, getString(R.string.toast_verified), Toast.LENGTH_SHORT).show()
+            updateTrustIndicator()
         }
     }
 

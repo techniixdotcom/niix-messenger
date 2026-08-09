@@ -10,6 +10,10 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Only ever used to install an update APK the person explicitly chose to install, after
+         its Ed25519 signature has already been verified: see UpdateChecker. The whole feature
+         is opt-in and off by default. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- niix has no location feature and must never request it. This app has no code path that
          reads GPS/network location, and these tags forcibly strip the permissions at build time

@@ -126,6 +126,13 @@ class SettingsActivity : SecureActivity() {
         findViewById<LinearLayout>(R.id.row_import).setOnClickListener {
             importPicker.launch(arrayOf("*/*"))
         }
+
+        val updateCheckSwitch = findViewById<MaterialSwitch>(R.id.switch_update_check)
+        updateCheckSwitch.isChecked = container.storage.settings.getBool(SettingsStore.KEY_UPDATE_CHECK_ENABLED, false)
+        updateCheckSwitch.setOnCheckedChangeListener { _, checked ->
+            container.storage.settings.setBool(SettingsStore.KEY_UPDATE_CHECK_ENABLED, checked)
+        }
+        findViewById<LinearLayout>(R.id.row_check_update_now).setOnClickListener { checkForUpdateNow() }
     }
 
     /** Detaches, changes, and reattaches so a programmatic state change never re-fires the
@@ -286,6 +293,68 @@ class SettingsActivity : SecureActivity() {
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
+    }
+
+    private fun checkForUpdateNow() {
+        val enabled = container.storage.settings.getBool(SettingsStore.KEY_UPDATE_CHECK_ENABLED, false)
+        if (!enabled) {
+            toast(getString(R.string.update_disabled_first))
+            return
+        }
+        val checker = app.niix.update.UpdateChecker(applicationContext)
+        val progress = AlertDialog.Builder(this)
+            .setMessage(R.string.update_checking)
+            .setCancelable(false)
+            .show()
+        lifecycleScope.launch {
+            val currentVersion = runCatching {
+                packageManager.getPackageInfo(packageName, 0).versionName
+            }.getOrNull().orEmpty()
+            val result = withContext(Dispatchers.IO) {
+                runCatching { checker.checkForUpdate(currentVersion) }
+                    .getOrElse { app.niix.update.UpdateCheckResult.Error(it.message ?: "Unknown error") }
+            }
+            progress.dismiss()
+            when (result) {
+                is app.niix.update.UpdateCheckResult.UpToDate -> toast(getString(R.string.update_up_to_date))
+                is app.niix.update.UpdateCheckResult.Error -> toast(getString(R.string.toast_failed, result.message))
+                is app.niix.update.UpdateCheckResult.Available -> showUpdateAvailableDialog(checker, result.info)
+            }
+        }
+    }
+
+    private fun showUpdateAvailableDialog(checker: app.niix.update.UpdateChecker, info: app.niix.update.UpdateInfo) {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.update_available_title, info.versionName))
+            .setMessage(info.changelog)
+            .setPositiveButton(R.string.update_install) { _, _ -> downloadAndOfferInstall(checker, info) }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
+    }
+
+    private fun downloadAndOfferInstall(checker: app.niix.update.UpdateChecker, info: app.niix.update.UpdateInfo) {
+        val progress = AlertDialog.Builder(this)
+            .setMessage(R.string.update_downloading)
+            .setCancelable(false)
+            .show()
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching { checker.downloadAndVerify(info) }
+                    .getOrElse { app.niix.update.UpdateInstallResult.Rejected(it.message ?: "Unknown error") }
+            }
+            progress.dismiss()
+            when (result) {
+                is app.niix.update.UpdateInstallResult.Rejected -> toast(getString(R.string.toast_failed, result.reason))
+                is app.niix.update.UpdateInstallResult.Ready -> {
+                    AlertDialog.Builder(this@SettingsActivity)
+                        .setTitle(getString(R.string.update_available_title, info.versionName))
+                        .setMessage(getString(R.string.update_verified_prompt, info.versionName))
+                        .setPositiveButton(R.string.update_install) { _, _ -> checker.promptInstall(result.apkFile) }
+                        .setNegativeButton(R.string.dialog_cancel, null)
+                        .show()
+                }
+            }
+        }
     }
 
     private fun backupFileName(): String {

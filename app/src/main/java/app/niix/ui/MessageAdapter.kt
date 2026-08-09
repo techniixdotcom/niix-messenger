@@ -53,6 +53,12 @@ class MessageAdapter(
         val m = items[position]
         val context = holder.itemView.context
         holder.time.text = DateUtils.formatDateTime(context, m.createdAtEpochMillis, DateUtils.FORMAT_SHOW_TIME)
+        if (m.direction == MessageDirection.OUTGOING && m.deliveryState == app.niix.core.model.DeliveryState.FAILED) {
+            holder.time.text = "${holder.time.text} · ${context.getString(R.string.delivery_failed)}"
+            holder.time.setTextColor(context.getColor(R.color.niix_danger))
+        } else {
+            holder.time.setTextColor(context.getColor(R.color.niix_on_surface_muted))
+        }
         holder.itemView.setOnLongClickListener { onLongClick(m); true }
         holder.itemView.setBackgroundColor(
             if (m.id == highlightedId) context.getColor(R.color.niix_search_highlight) else android.graphics.Color.TRANSPARENT,

@@ -6,10 +6,17 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
-// Release signing comes from a local, git-ignored keystore.properties (never from a value baked
-// into this file or committed to the repo) -- see keystore.properties.example for the format and
-// README "Signing a release build" for how to generate a keystore with keytool.
-val keystorePropertiesFile = rootProject.file("keystore.properties")
+// Release signing comes from a keystore.properties file (never from a value baked into this
+// file or committed to the repo) -- see keystore.properties.example for the format.
+//
+// Its location: NIIX_KEYSTORE_PROPERTIES env var if set (an absolute path -- this is how you
+// keep your signing key on removable media, e.g. a USB drive, entirely outside this project
+// checkout, and build the same signed APK from any machine by pointing at it -- see
+// build-niix.sh, which resolves this automatically), otherwise the local, git-ignored
+// keystore.properties right here in the project root.
+val keystorePropertiesFile = System.getenv("NIIX_KEYSTORE_PROPERTIES")
+    ?.let { file(it) }
+    ?: rootProject.file("keystore.properties")
 val keystoreProperties = Properties()
 val hasReleaseKeystore = keystorePropertiesFile.exists()
 if (hasReleaseKeystore) {
@@ -134,6 +141,7 @@ dependencies {
     implementation(libs.kmp.tor.resource.exec.tor)
     implementation(libs.zxing.embedded)
     implementation(libs.androidx.exifinterface)
+    implementation(libs.bouncycastle)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

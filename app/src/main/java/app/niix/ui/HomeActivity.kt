@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -103,6 +105,60 @@ class HomeActivity : SecureActivity() {
         lifecycleScope.launch {
             container.conversations.changes.collect { load() }
         }
+        maybeAutoCheckForUpdate()
+    }
+
+    /**
+     * Regularly (throttled to at most once per [AUTO_UPDATE_CHECK_INTERVAL_MILLIS]) checks for
+     * an app update in the background and prompts if one's found -- entirely silent otherwise
+     * (no toast for "up to date" or a failed check; that's only for the manual "Check now" in
+     * Settings). No-op unless the person has turned this on in Settings; makes no network call
+     * at all when it's off.
+     */
+    private fun maybeAutoCheckForUpdate() {
+        lifecycleScope.launch {
+            val enabled = withContext(Dispatchers.IO) {
+                container.storage.settings.getBool(app.niix.core.storage.SettingsStore.KEY_UPDATE_CHECK_ENABLED, false)
+            }
+            if (!enabled) return@launch
+            val lastCheckedAt = withContext(Dispatchers.IO) {
+                container.storage.settings.getLong(app.niix.core.storage.SettingsStore.KEY_LAST_UPDATE_CHECK_AT, 0L)
+            }
+            val nowMs = System.currentTimeMillis()
+            if (nowMs - lastCheckedAt < AUTO_UPDATE_CHECK_INTERVAL_MILLIS) return@launch
+
+            val checker = app.niix.update.UpdateChecker(applicationContext)
+            val currentVersion = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull().orEmpty()
+            val result = withContext(Dispatchers.IO) {
+                runCatching { checker.checkForUpdate(currentVersion) }
+                    .getOrElse { app.niix.update.UpdateCheckResult.Error(it.message ?: "Unknown error") }
+            }
+            withContext(Dispatchers.IO) {
+                container.storage.settings.setLong(app.niix.core.storage.SettingsStore.KEY_LAST_UPDATE_CHECK_AT, nowMs)
+            }
+            val info = (result as? app.niix.update.UpdateCheckResult.Available)?.info ?: return@launch
+            if (isFinishing) return@launch
+            AlertDialog.Builder(this@HomeActivity)
+                .setTitle(getString(R.string.update_available_title, info.versionName))
+                .setMessage(info.changelog)
+                .setPositiveButton(R.string.update_install) { _, _ -> downloadAutoUpdate(checker, info) }
+                .setNegativeButton(R.string.dialog_cancel, null)
+                .show()
+        }
+    }
+
+    private fun downloadAutoUpdate(checker: app.niix.update.UpdateChecker, info: app.niix.update.UpdateInfo) {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching { checker.downloadAndVerify(info) }
+                    .getOrElse { app.niix.update.UpdateInstallResult.Rejected(it.message ?: "Unknown error") }
+            }
+            when (result) {
+                is app.niix.update.UpdateInstallResult.Rejected ->
+                    Toast.makeText(this@HomeActivity, getString(R.string.toast_failed, result.reason), Toast.LENGTH_SHORT).show()
+                is app.niix.update.UpdateInstallResult.Ready -> checker.promptInstall(result.apkFile)
+            }
+        }
     }
 
     /**
@@ -194,7 +250,7 @@ class HomeActivity : SecureActivity() {
 
     private fun load() {
         lifecycleScope.launch {
-            val (groups, contacts, requests) = withContext(Dispatchers.IO) {
+            val (groups, contacts, requests, groupInvites) = withContext(Dispatchers.IO) {
                 val all = container.conversations.listConversations().filterNot { it.pending }.map { c ->
                     val last = container.conversations.lastMessage(c.id)
                     Pair(
@@ -212,37 +268,60 @@ class HomeActivity : SecureActivity() {
                 val r = container.conversations.pendingRequests()
                     .map { req -> Pair(req, container.conversations.lastMessage(req.id)) }
                     .sortedByDescending { (req, last) -> last?.createdAtEpochMillis ?: req.createdAtEpochMillis }
-                Triple(g, c, r)
+                val gi = container.conversations.pendingGroupInvites()
+                Quadruple(g, c, r, gi)
             }
             groupAdapter.submit(groups)
             contactAdapter.submit(contacts)
             groupsEmpty.visibility = if (groups.isEmpty()) View.VISIBLE else View.GONE
             contactsEmpty.visibility = if (contacts.isEmpty()) View.VISIBLE else View.GONE
-            renderRequests(requests)
+            renderRequests(requests, groupInvites)
         }
     }
 
     /** Fills the "Requests" section with anyone who messaged you first without being a saved
-     * contact (e.g. after scanning your QR code), each with Accept / Block actions. Hidden
-     * entirely when there are none. */
-    private fun renderRequests(requests: List<Pair<app.niix.core.model.Conversation, Message?>>) {
+     * contact (e.g. after scanning your QR code), and any group invite from a group this device
+     * hasn't seen before, each with Accept / Block actions. Hidden entirely when there are none. */
+    private fun renderRequests(
+        requests: List<Pair<app.niix.core.model.Conversation, Message?>>,
+        groupInvites: List<app.niix.core.storage.PendingGroupInvite>,
+    ) {
         val section = findViewById<LinearLayout>(R.id.requests_section)
         val list = findViewById<LinearLayout>(R.id.requests_list)
-        section.visibility = if (requests.isEmpty()) View.GONE else View.VISIBLE
+        section.visibility = if (requests.isEmpty() && groupInvites.isEmpty()) View.GONE else View.VISIBLE
         list.removeAllViews()
         for ((conversation, last) in requests) {
-            list.addView(requestRow(conversation, last?.let { previewOf(it) } ?: getString(R.string.no_messages)))
+            list.addView(
+                requestRow(
+                    title = conversation.title,
+                    // Every pending request is inherently unverified -- TOFU just happened and
+                    // no safety-number check could have occurred yet, so this is unconditional.
+                    preview = getString(R.string.request_unverified_prefix, last?.let { previewOf(it) } ?: getString(R.string.no_messages)),
+                    onAccept = { container.conversations.acceptRequest(conversation.id) },
+                    onBlock = { container.conversations.blockRequest(conversation.id) },
+                ),
+            )
+        }
+        for (invite in groupInvites) {
+            list.addView(
+                requestRow(
+                    title = invite.title,
+                    preview = getString(R.string.group_invite_preview, invite.members.size, invite.inviterOnion.take(10)),
+                    onAccept = { container.conversations.acceptGroupInvite(invite.conversationId) },
+                    onBlock = { container.conversations.rejectGroupInvite(invite.conversationId) },
+                ),
+            )
         }
     }
 
-    private fun requestRow(conversation: app.niix.core.model.Conversation, preview: String): View {
+    private fun requestRow(title: String, preview: String, onAccept: suspend () -> Boolean, onBlock: suspend () -> Boolean): View {
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = android.view.Gravity.CENTER_VERTICAL
             setPadding(dp(16), dp(8), dp(16), dp(8))
         }
         val text = TextView(this).apply {
-            text = "${conversation.title.take(16)}\n$preview"
+            text = "${title.take(16)}\n$preview"
             setTextColor(resources.getColor(R.color.niix_on_surface, theme))
             textSize = 13f
             maxLines = 2
@@ -250,10 +329,10 @@ class HomeActivity : SecureActivity() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         val accept = requestButton(getString(R.string.request_accept), resources.getColor(R.color.niix_green, theme)) {
-            respondToRequest(conversation.id) { container.conversations.acceptRequest(conversation.id) }
+            respondToRequest(onAccept)
         }
         val block = requestButton(getString(R.string.request_block), resources.getColor(R.color.niix_danger, theme)) {
-            respondToRequest(conversation.id) { container.conversations.blockRequest(conversation.id) }
+            respondToRequest(onBlock)
         }
         row.addView(text)
         row.addView(accept, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(8) })
@@ -277,12 +356,14 @@ class HomeActivity : SecureActivity() {
             setOnClickListener { onClick() }
         }
 
-    private fun respondToRequest(conversationId: String, action: suspend () -> Boolean) {
+    private fun respondToRequest(action: suspend () -> Boolean) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) { runCatching { action() } }
             load()
         }
     }
+
+    private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
@@ -392,5 +473,9 @@ class HomeActivity : SecureActivity() {
         ) {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 1)
         }
+    }
+
+    companion object {
+        private const val AUTO_UPDATE_CHECK_INTERVAL_MILLIS = 24L * 60 * 60 * 1000
     }
 }
