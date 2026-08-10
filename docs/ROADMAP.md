@@ -1,69 +1,55 @@
 # Roadmap
 
-## Implemented in the current build
+## Implemented and working today
 
-On-device, transport-independent halves of the requested features are implemented and
-reviewable (they cannot be runtime-verified here — no Android SDK, and live send/receive
-needs a real transport):
+This is a real, working app end to end, not a foundation-only skeleton — on-device build and
+review confirm the following are implemented and wired together, not stubbed:
 
-- App lock: Argon2id passcode mixed with the Keystore secret to derive the DB key; lock
+- **Transport:** embedded Tor (`KmpTorTransport`, via `kmp-tor`) with a persistent v3 onion
+  service, inbound accept loop, and outbound SOCKS connections — no external Tor/Orbot
+  required. An alternate implementation for connecting to an external Tor process also exists
+  in `:core:transport` (`RealTorTransport`), not wired by default.
+- **App lock:** Argon2id passcode mixed with the Keystore secret to derive the DB key; lock
   screen; auto-lock on timeout; manual lock.
-- Messaging domain: conversations (direct + group), typed wire protocol + codec.
-- 1-on-1 and group messaging (group delivery by client-side fan-out over each member's
-  verified 1-on-1 session; sender-key optimization for large groups deferred to Phase 4).
-- Disappearing-message timers + background expiry sweeper (deletes rows and attachment files).
-- Manual delete: locally, or "delete for everyone" via a control message.
-- Attachment encryption: per-file streaming AEAD with a sendable per-file key.
+- **Duress passcode:** wipes the real data and opens a fresh account seeded with plausible
+  placeholder conversations, rather than an obviously empty app.
+- **Calculator disguise:** real launcher icon disabled by default in favor of a calculator
+  activity-alias; opens the real app on correct passcode entry.
+- **Contact exchange:** QR display and QR scanning (`PortraitCaptureActivity`) for
+  onion-address + identity-key bundles, plus safety-number verification in the chat screen.
+- **Messaging domain:** conversations (direct + group), typed wire protocol + codec, send/
+  receive over the real transport.
+- **1-on-1 and group messaging:** group delivery by client-side fan-out over each member's
+  verified 1-on-1 session; sender-key optimization for large groups still deferred (see below).
+- **Attachments:** per-file streaming AEAD encryption with a sendable per-file key, actual byte
+  transfer over the transport (not just a metadata offer), and automatic retry on a failed
+  send.
+- **Disappearing-message timers** + background expiry sweeper (deletes rows and attachment
+  files).
+- **Manual delete:** locally, or "delete for everyone" via a control message.
+- **Contact blocking + allowlist mode**, notification-content privacy, `FLAG_SECURE` on
+  sensitive screens.
+- **Encrypted backup/restore** to an app-private file under a user passphrase.
+- **Opt-in, off-by-default update checker:** Tor-only GitHub Releases check, Ed25519 signature
+  verification, fail-closed if unconfigured.
 
-Still required for a working app: a real `TorTransport`, the inbound transport listener,
-attachment byte transfer over that transport, the chat/contact/group UI, safety-number
-verification, and an independent security/crypto audit.
+Still required before treating this as more than experimental: an independent security/crypto
+audit (see `SECURITY.md`) — nothing below changes that.
 
-Version-sensitive calls to verify on first compile (isolated and commented in-code): the
-SQLCipher `openOrCreateDatabase` / `changePassword` signatures, the Tink
-`AesGcmHkdfStreaming` constructor, and the BouncyCastle Argon2/HKDF APIs.
+## What's genuinely still ahead
 
-## Phase 1 — foundation (this repository)
-
-- Multi-module Gradle build on current dependencies.
-- Encrypted storage: SQLCipher + Keystore-wrapped key + Tink file encryption.
-- Crypto wired to libsignal PQXDH/Kyber: identity, prekeys, DB-backed stores, sessions,
-  encrypt/decrypt.
-- Tor transport abstraction with a placeholder provider and a documented seam.
-- Minimal app that initializes and displays identity, registration ID, onion, and state.
-
-## Phase 2 — real transport and wire protocol
-
-- Implement `TorTransport` over a real Tor (C daemon via JNI wrapper, or Arti).
-- Persist the v3 onion-service key (encrypted) for a stable address.
-- Foreground service to keep the onion service and inbound listener alive.
-- Define the peer wire protocol: length-prefixed frames, message types, replay protection,
-  and padding to resist traffic analysis.
-- Per-contact one-time prekey distribution and replenishment policy.
-
-## Phase 3 — contacts and conversations
-
-- Contact exchange UI: render and scan `PreKeyBundle` + identity as a QR code; pin on import.
-- Identity verification UX (comparable safety numbers) and re-verification on key change.
-- Conversation storage and UI backed by the encrypted `messages` table.
-- Delivery/read state and retry/queueing while a peer is offline.
-
-## Phase 4 — robustness and groups
-
-- Multi-device support (the schema already keys sessions by name + device).
-- Group messaging via libsignal sender keys, with a persistent sender-key store.
-- Key rotation schedules (signed prekey and Kyber last-resort rotation).
-- Continuous post-quantum ratcheting (forward secrecy + post-compromise security for the
-  whole session, not just the handshake) by adopting libsignal's Sparse Post-Quantum Ratchet
-  (SPQR / "Triple Ratchet") when it is exposed through the library's public API. See the
-  note below — this is an upgrade we consume, not one we reimplement.
-- Push-free wake/connectivity strategy and battery optimization.
-
-## Phase 5 — assurance
-
-- Threat model document and independent security audit.
-- Reproducible builds and signed releases.
-- Fuzzing of the wire protocol and codecs.
+- **Sender-key groups.** Today's `SenderKeyStore` is an in-memory, non-persisted stub; groups
+  work via fan-out. Moving to a real, persisted sender-key protocol reduces per-message cost
+  for larger groups and is the main remaining messaging-architecture gap.
+- **Multi-device support.** The storage schema already keys sessions by name + device, but
+  there's no device-linking flow yet — one identity lives on one phone today.
+- **Continuous post-quantum ratcheting.** See the SPQR section below — this is an upstream
+  `libsignal` capability to adopt, not something to build in this repo directly.
+- **Key rotation schedules** (signed prekey and Kyber last-resort rotation policy).
+- **Reproducible builds and signed releases**, beyond the existing local keystore-signing flow.
+- **Fuzzing of the wire protocol and codecs.**
+- **Independent security audit** of the whole system, including the embedded-Tor integration
+  specifically, plus a written threat model document.
 
 ## Post-quantum ratcheting (SPQR): adopt, do not reimplement
 
@@ -88,15 +74,15 @@ Deliberately NOT implemented here, by design:
   serious research with no audited, maintained implementation; writing them by hand would
   reintroduce exactly the "invent your own cryptography" risk this project exists to avoid.
 
-Sound, non-crypto-inventing ideas worth adopting in the protocol phase (Phase 2/3), done
-correctly rather than as cosmetic add-ons:
+Sound, non-crypto-inventing ideas worth adopting alongside sender-key groups and multi-device,
+done correctly rather than as cosmetic add-ons:
 
 - A periodic re-key cadence implemented as a session-rotation policy on top of libsignal's
   audited handshake (re-run PQXDH after N messages / T time), not as new ratchet math.
 - Transcript/version binding: negotiate a protocol version and bind it, plus a session id,
-  into the authenticated associated data of the wire frames once the wire protocol exists —
-  so downgrade and unknown-key-share attempts are rejectable in-band. This must be bound into
-  the authenticated transcript to mean anything; an unbound version field is security theater.
+  into the authenticated associated data of the wire frames — so downgrade and unknown-key-share
+  attempts are rejectable in-band. This must be bound into the authenticated transcript to mean
+  anything; an unbound version field is security theater.
 - Dual-signature *identity* authentication (Ed25519 + ML-DSA) for the long-term identity and
   handshake only. Do not sign every message: per-message non-repudiation would break the
   deniability property that protects users.
