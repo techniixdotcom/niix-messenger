@@ -61,7 +61,7 @@ NiiX has no servers by design. That gives strong privacy, but it comes with real
 
 The repository includes a self-contained build script that downloads its own JDK, Gradle and Android SDK into a local folder (no system installation required).
 
-**Signing a release build.** A release APK must be signed with your own key, which only you should ever hold:
+**Signing a release build.** A release APK must be signed with your own key:
 
 ```
 keytool -genkeypair -v -storetype PKCS12 \
@@ -81,14 +81,6 @@ Back up `niix-release.jks` somewhere safe outside this folder — losing it mean
 You can also build with a standard Android/Gradle setup (Kotlin, `minSdk 26`, `compileSdk 35`).
 
 **Note on code shrinking:** the release build type has R8 shrinking (`isMinifyEnabled`) turned off deliberately. This app leans on libsignal, SQLCipher, and kmp-tor, all of which use JNI or reflection in ways R8 can silently strip without a build error — the failure only shows up later, on a real device, often as something as consequential as Tor never starting. `proguard-rules.pro` already has keep rules for all three so shrinking can be tried safely later, but that's worth doing as its own deliberate, tested step, not bundled into every build.
-
-## Notes for packagers (F-Droid)
-
-Two things to be aware of if you package NiiX for a build-from-source repository such as F-Droid:
-
-- **Prebuilt native binaries.** NiiX embeds Tor via `kmp-tor` and uses `libsignal`, both of which are normally consumed as **prebuilt** native libraries. F-Droid's inclusion policy prefers building everything from source, so a compliant recipe would need to build Tor and libsignal from source (as Briar and Orbot do), which is non-trivial packaging work.
-- **Licensing.** `libsignal` is AGPLv3. Linking it means NiiX as a whole must be distributed under AGPLv3-compatible terms — factor that into the project's license.
-- **The optional update checker should be disabled or removed** in any packaged build (F-Droid and similar repositories manage updates themselves; NiiX's own checker exists for people installing outside such a repository).
 
 ## License and status
 
