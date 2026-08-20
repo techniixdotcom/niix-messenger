@@ -18,7 +18,12 @@ val keystorePropertiesFile = System.getenv("NIIX_KEYSTORE_PROPERTIES")
     ?.let { file(it) }
     ?: rootProject.file("keystore.properties")
 val keystoreProperties = Properties()
-val hasReleaseKeystore = keystorePropertiesFile.exists()
+// -PniixUnsigned=true forces an unsigned :app:assembleRelease output (app-release-unsigned.apk)
+// regardless of whether a real keystore is configured, and never reads keystoreProperties at
+// all when set -- used by build-niix.sh's --verify-reproducible to produce a hashable APK from
+// source alone, with zero chance of that path ever touching a real signing key.
+val forceUnsigned = (project.findProperty("niixUnsigned") as String?)?.toBoolean() == true
+val hasReleaseKeystore = !forceUnsigned && keystorePropertiesFile.exists()
 if (hasReleaseKeystore) {
     FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
@@ -126,6 +131,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:crypto"))
     implementation(project(":core:transport"))
+    implementation(project(":core:relay"))
     implementation(project(":core:messaging"))
 
     implementation(libs.androidx.core.ktx)

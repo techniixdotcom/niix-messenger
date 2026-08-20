@@ -86,8 +86,27 @@ class PasscodeActivity : AppCompatActivity() {
             } else {
                 entered.clear()
                 render()
-                android.widget.Toast.makeText(this@PasscodeActivity, getString(R.string.passcode_incorrect), android.widget.Toast.LENGTH_SHORT).show()
+                val remainingMillis = UnlockFlow.throttleRemainingMillis(container)
+                val message = if (remainingMillis > 0) {
+                    getString(R.string.passcode_throttled, formatWait(remainingMillis))
+                } else {
+                    getString(R.string.passcode_incorrect)
+                }
+                android.widget.Toast.makeText(this@PasscodeActivity, message, android.widget.Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    /** "5s" / "3m" -- coarse on purpose. This is a local rate limit meant to slow down guessing,
+     * not a precision timer; showing a rounded-up unit is both simpler and avoids implying a
+     * more exact countdown than what's actually being enforced. */
+    private fun formatWait(remainingMillis: Long): String {
+        val totalSeconds = (remainingMillis + 999) / 1000
+        return if (totalSeconds < 60) {
+            getString(R.string.duration_seconds, totalSeconds)
+        } else {
+            val minutes = (totalSeconds + 59) / 60
+            getString(R.string.duration_minutes, minutes)
         }
     }
 

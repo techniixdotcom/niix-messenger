@@ -138,6 +138,7 @@ Tap + to add a contact.</string>
     <string name="request_unverified_prefix">⚠ Unverified · %1$s</string>
     <string name="unverified_indicator">⚠ Unverified identity — check safety number</string>
     <string name="delivery_failed">Failed to send</string>
+    <string name="delivery_relayed">Sent via relay</string>
     <string name="group_photo">Group photo</string>
     <string name="group_photo_admin_only">Only a group admin can change the group photo</string>
     <string name="group_photo_remove">Remove group photo</string>
@@ -166,6 +167,10 @@ tap + to add</string>
     <string name="create_group_creating">Creating…</string>
     <string name="setting_screenshots">Allow screenshots</string>
     <string name="setting_screenshots_desc">When off, screenshots and screen recording are blocked inside the app.</string>
+    <string name="setting_relay_mode">Enable relay mode</string>
+    <string name="setting_relay_mode_desc">Help deliver messages for the wider niix network while their recipients are offline. Your own messages can already use other people\'s relays either way.</string>
+    <string name="setting_cover_traffic">Cover traffic</string>
+    <string name="setting_cover_traffic_desc">Periodically send decoy messages so someone watching your network traffic can\'t tell when you\'re actually chatting. Uses a small amount of extra battery and data.</string>
     <string name="attach">Attach</string>
     <string name="attach_camera">Camera</string>
     <string name="attach_photo">Photo</string>
@@ -214,6 +219,9 @@ tap + to add</string>
     <string name="passcode_placeholder">–</string>
     <string name="passcode_too_short">Enter at least 6 digits</string>
     <string name="passcode_incorrect">Incorrect passcode</string>
+    <string name="passcode_throttled">Too many attempts. Try again in %1$s.</string>
+    <string name="duration_seconds">%1$ds</string>
+    <string name="duration_minutes">%1$dm</string>
     <string name="setting_require_passcode">Require a passcode</string>
     <string name="setting_require_passcode_desc">Without this, anyone who can unlock your phone can open NiiX directly.</string>
     <string name="setting_disguise">Disguise as calculator</string>

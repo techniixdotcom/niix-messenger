@@ -56,6 +56,9 @@ class MessageAdapter(
         if (m.direction == MessageDirection.OUTGOING && m.deliveryState == app.niix.core.model.DeliveryState.FAILED) {
             holder.time.text = "${holder.time.text} · ${context.getString(R.string.delivery_failed)}"
             holder.time.setTextColor(context.getColor(R.color.niix_danger))
+        } else if (m.direction == MessageDirection.OUTGOING && m.deliveryState == app.niix.core.model.DeliveryState.RELAYED) {
+            holder.time.text = "${holder.time.text} · ${context.getString(R.string.delivery_relayed)}"
+            holder.time.setTextColor(context.getColor(R.color.niix_on_surface_muted))
         } else {
             holder.time.setTextColor(context.getColor(R.color.niix_on_surface_muted))
         }

@@ -85,6 +85,26 @@ class SettingsActivity : SecureActivity() {
             }
         }
 
+        val relayMode = findViewById<MaterialSwitch>(R.id.switch_relay_mode)
+        relayMode.isChecked = container.conversations.isRelayModeEnabled()
+        relayMode.setOnCheckedChangeListener { _, checked ->
+            lifecycleScope.launch { container.conversations.setRelayModeEnabled(checked) }
+        }
+
+        val coverTraffic = findViewById<MaterialSwitch>(R.id.switch_cover_traffic)
+        coverTraffic.isChecked = container.storage.settings.getBool(SettingsStore.KEY_COVER_TRAFFIC_ENABLED, false)
+        coverTraffic.setOnCheckedChangeListener { _, checked ->
+            container.storage.settings.setBool(SettingsStore.KEY_COVER_TRAFFIC_ENABLED, checked)
+            // Takes effect immediately rather than only on next launch, same as every other
+            // toggle on this screen -- ConnectivityService's own startup check is only what
+            // makes the setting "stick" across a process restart.
+            if (checked) {
+                container.coverTraffic.start(container.appScope)
+            } else {
+                container.coverTraffic.stop()
+            }
+        }
+
         val requirePasscode = findViewById<MaterialSwitch>(R.id.switch_require_passcode)
         val disguise = findViewById<MaterialSwitch>(R.id.switch_disguise)
 

@@ -52,7 +52,18 @@ object UnlockFlow {
                 container.lock.reset()
                 true
             }
-            UnlockResult.FAILED -> false
+            // Treated identically to a wrong guess by this shared boolean contract, so
+            // CalculatorActivity's disguise stays exactly as indistinguishable as it always was
+            // -- it doesn't need to know the difference. A caller that *does* want to show a
+            // friendlier "try again in X" message (PasscodeActivity) can call
+            // [throttleRemainingMillis] itself instead of branching on this return value.
+            UnlockResult.FAILED, UnlockResult.THROTTLED -> false
         }
     }
+
+    /** Milliseconds until the next unlock attempt is allowed, or 0 right now. Purely informational
+     * -- safe to call before or after a submit, never touches the database. See
+     * [app.niix.core.storage.AppLockManager.throttleRemainingMillis]. */
+    fun throttleRemainingMillis(container: AppContainer): Long =
+        container.storage.appLock.throttleRemainingMillis()
 }
