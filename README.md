@@ -8,9 +8,6 @@ tomorrow, NiiX would keep working exactly the same, because nothing about it dep
 
 It looks and behaves like a calculator until you type your passcode.
 
-> **NiiX hasn't had an independent security audit yet.** Use your own judgment about how much
-> to trust it, especially if your safety depends on it.
-
 ## How it works
 
 There is no NiiX server anywhere — your phone runs its own Tor onion service, and your contacts
