@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "app.niix.core.messaging"
+    namespace = "app.niix.core.relay"
     compileSdk = 35
 
     defaultConfig {
@@ -24,10 +24,9 @@ android {
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     api(project(":core:model"))
-    api(project(":core:storage"))
-    api(project(":core:crypto"))
-    api(project(":core:transport"))
-    api(project(":core:relay"))
+    implementation(project(":core:storage"))
+    implementation(project(":core:crypto"))
+    implementation(project(":core:transport"))
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)

@@ -62,6 +62,71 @@ sealed class WireMessage {
          * (stored under the group id instead, shared by everyone in it). */
         val conversationId: String? = null,
     ) : WireMessage()
+
+    /**
+     * Distributes a sender's group (sender-key) session to one recipient. Always sent over that
+     * recipient's own already-authenticated pairwise session -- see [ConversationManager] -- so
+     * this message never travels over the wire un-authenticated; the pairwise session is what
+     * proves it really came from [senderOnion].
+     */
+    data class SenderKeyDistribution(
+        val conversationId: String,
+        val senderOnion: String,
+        val distributionBytes: ByteArray,
+    ) : WireMessage()
+
+    /**
+     * A group message body encrypted once under the sender's current sender-key chain (see
+     * [app.niix.core.crypto.GroupCryptoEngine]) rather than re-encrypted per recipient. Still
+     * delivered to each member over their own pairwise session like every other wire message --
+     * this only changes how the *body* is encrypted, not how it's transported -- so decrypting
+     * this envelope yields another, inner [WireMessage] (typically [Text] or [AttachmentOffer])
+     * to dispatch exactly as if it had arrived un-wrapped.
+     */
+    data class GroupCiphertext(
+        val conversationId: String,
+        val senderOnion: String,
+        val ciphertext: ByteArray,
+    ) : WireMessage()
+
+    /**
+     * Item 11.1 of the relay build spec: a certificate the sender (the issuer) is granting to
+     * whoever decrypts this message, stating "I authorize [granteeIdentityKey] to store offline
+     * messages for me via relays, until [expiresAt]." Always delivered over the existing
+     * encrypted pairwise session like any other [WireMessage] -- the issuer's identity is
+     * whoever this arrived from, cryptographically, never a claim inside the payload itself.
+     * [granteeIdentityKey] should always equal the *recipient's own* identity key; a recipient
+     * that doesn't recognize itself as the named grantee should discard this rather than store
+     * it (see `ConversationManager.dispatch`).
+     */
+    data class RelayGrant(
+        val granteeIdentityKey: ByteArray,
+        val issuedAt: Long,
+        val expiresAt: Long,
+        val signature: ByteArray,
+    ) : WireMessage()
+
+    /**
+     * Announces that the sender has toggled "Enable relay mode" on or off (item 11.3's bootstrap
+     * mechanism). Purely a cold-start convenience: it lets a recipient seed its Kademlia routing
+     * table from its own contacts without a central directory. It does not itself restrict who
+     * can later be found or used in the wider overlay -- that's discovered independently via
+     * FIND_NODE once bootstrapped (see `core/relay`'s RoutingTable/KademliaLookup).
+     */
+    data class RelayCapabilityUpdate(
+        val senderOnion: String,
+        val enabled: Boolean,
+    ) : WireMessage()
+
+    /**
+     * Cover traffic (see [app.niix.core.messaging.CoverTrafficScheduler]): a frame containing
+     * nothing but random filler bytes, sent, padded, and encrypted through the exact same path
+     * as [Text] so it's indistinguishable in size, connection shape, and timing-eligibility from
+     * a real message to anyone who can only observe Tor circuit traffic, not decrypt it. Always
+     * silently discarded on arrival -- never stored, never surfaced in any UI, never
+     * acknowledged any differently than any other frame type.
+     */
+    data class Dummy(val filler: ByteArray) : WireMessage()
 }
 
 object WireCodec {
@@ -74,6 +139,11 @@ object WireCodec {
     private const val TYPE_GROUP_INVITE = 5
     private const val TYPE_ATTACHMENT = 6
     private const val TYPE_PROFILE = 7
+    private const val TYPE_SENDER_KEY_DISTRIBUTION = 8
+    private const val TYPE_GROUP_CIPHERTEXT = 9
+    private const val TYPE_RELAY_GRANT = 10
+    private const val TYPE_RELAY_CAPABILITY_UPDATE = 11
+    private const val TYPE_DUMMY = 12
 
     fun encode(message: WireMessage): ByteArray {
         val out = ByteArrayOutputStream()
@@ -130,6 +200,34 @@ object WireCodec {
                     writeOptionalBlock(s, message.image)
                     writeOptionalString(s, message.conversationId)
                 }
+                is WireMessage.SenderKeyDistribution -> {
+                    s.writeByte(TYPE_SENDER_KEY_DISTRIBUTION)
+                    s.writeUTF(message.conversationId)
+                    s.writeUTF(message.senderOnion)
+                    writeBlock(s, message.distributionBytes)
+                }
+                is WireMessage.GroupCiphertext -> {
+                    s.writeByte(TYPE_GROUP_CIPHERTEXT)
+                    s.writeUTF(message.conversationId)
+                    s.writeUTF(message.senderOnion)
+                    writeBlock(s, message.ciphertext)
+                }
+                is WireMessage.RelayGrant -> {
+                    s.writeByte(TYPE_RELAY_GRANT)
+                    writeBlock(s, message.granteeIdentityKey)
+                    s.writeLong(message.issuedAt)
+                    s.writeLong(message.expiresAt)
+                    writeBlock(s, message.signature)
+                }
+                is WireMessage.RelayCapabilityUpdate -> {
+                    s.writeByte(TYPE_RELAY_CAPABILITY_UPDATE)
+                    s.writeUTF(message.senderOnion)
+                    s.writeBoolean(message.enabled)
+                }
+                is WireMessage.Dummy -> {
+                    s.writeByte(TYPE_DUMMY)
+                    writeBlock(s, message.filler)
+                }
             }
         }
         return out.toByteArray()
@@ -183,6 +281,27 @@ object WireCodec {
                     image = readOptionalBlock(s),
                     conversationId = readOptionalString(s),
                 )
+                TYPE_SENDER_KEY_DISTRIBUTION -> WireMessage.SenderKeyDistribution(
+                    conversationId = s.readUTF(),
+                    senderOnion = s.readUTF(),
+                    distributionBytes = readBlock(s),
+                )
+                TYPE_GROUP_CIPHERTEXT -> WireMessage.GroupCiphertext(
+                    conversationId = s.readUTF(),
+                    senderOnion = s.readUTF(),
+                    ciphertext = readBlock(s),
+                )
+                TYPE_RELAY_GRANT -> WireMessage.RelayGrant(
+                    granteeIdentityKey = readBlock(s),
+                    issuedAt = s.readLong(),
+                    expiresAt = s.readLong(),
+                    signature = readBlock(s),
+                )
+                TYPE_RELAY_CAPABILITY_UPDATE -> WireMessage.RelayCapabilityUpdate(
+                    senderOnion = s.readUTF(),
+                    enabled = s.readBoolean(),
+                )
+                TYPE_DUMMY -> WireMessage.Dummy(filler = readBlock(s))
                 else -> throw IllegalArgumentException("Unknown wire type $type")
             }
         }

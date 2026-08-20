@@ -38,6 +38,21 @@ object Schema {
         const val COL_BASE_KEY = "base_key"
     }
 
+    object GroupSenderKeys {
+        const val TABLE = "group_sender_keys"
+        const val COL_SENDER_NAME = "sender_name"
+        const val COL_SENDER_DEVICE_ID = "sender_device_id"
+        const val COL_DISTRIBUTION_ID = "distribution_id"
+        const val COL_RECORD = "record"
+    }
+
+    object GroupSenderKeyState {
+        const val TABLE = "group_sender_key_state"
+        const val COL_CONVERSATION_ID = "conversation_id"
+        const val COL_DISTRIBUTION_ID = "distribution_id"
+        const val COL_EPOCH = "epoch"
+    }
+
     object Sessions {
         const val TABLE = "sessions"
         const val COL_NAME = "name"
@@ -132,6 +147,30 @@ object Schema {
         const val COL_EPOCH = "epoch"
     }
 
+    /** RelayGrant certificates *received from* a contact -- i.e. "this contact authorized us to
+     * store offline messages for them via relays". One row per issuing contact; a fresh grant
+     * from the same issuer replaces the old one (see item 11.1 of the relay build spec). This is
+     * what `core/relay`'s RelayManager.storeForOffline() presents to a relay node later. */
+    object RelayGrantsReceived {
+        const val TABLE = "relay_grants_received"
+        const val COL_ISSUER_ONION = "issuer_onion"
+        const val COL_ISSUER_IDENTITY_KEY = "issuer_identity_key"
+        const val COL_ISSUED_AT = "issued_at"
+        const val COL_EXPIRES_AT = "expires_at"
+        const val COL_SIGNATURE = "signature"
+    }
+
+    /** RelayGrant certificates *issued to* a contact by this device, tracked purely so the
+     * automatic reissue-before-expiry check (item 11.1) knows whether one is already on file and
+     * how close it is to expiring, without re-sending one on every single message. */
+    object RelayGrantsIssued {
+        const val TABLE = "relay_grants_issued"
+        const val COL_GRANTEE_ONION = "grantee_onion"
+        const val COL_GRANTEE_IDENTITY_KEY = "grantee_identity_key"
+        const val COL_ISSUED_AT = "issued_at"
+        const val COL_EXPIRES_AT = "expires_at"
+    }
+
     val DDL: List<String> = listOf(
         """
         CREATE TABLE IF NOT EXISTS ${Account.TABLE} (
@@ -165,6 +204,22 @@ object Schema {
             ${KyberUsedBaseKeys.COL_SIGNED_ID} INTEGER NOT NULL,
             ${KyberUsedBaseKeys.COL_BASE_KEY} BLOB NOT NULL,
             PRIMARY KEY (${KyberUsedBaseKeys.COL_KYBER_ID}, ${KyberUsedBaseKeys.COL_SIGNED_ID}, ${KyberUsedBaseKeys.COL_BASE_KEY})
+        )
+        """.trimIndent(),
+        """
+        CREATE TABLE IF NOT EXISTS ${GroupSenderKeys.TABLE} (
+            ${GroupSenderKeys.COL_SENDER_NAME} TEXT NOT NULL,
+            ${GroupSenderKeys.COL_SENDER_DEVICE_ID} INTEGER NOT NULL,
+            ${GroupSenderKeys.COL_DISTRIBUTION_ID} TEXT NOT NULL,
+            ${GroupSenderKeys.COL_RECORD} BLOB NOT NULL,
+            PRIMARY KEY (${GroupSenderKeys.COL_SENDER_NAME}, ${GroupSenderKeys.COL_SENDER_DEVICE_ID}, ${GroupSenderKeys.COL_DISTRIBUTION_ID})
+        )
+        """.trimIndent(),
+        """
+        CREATE TABLE IF NOT EXISTS ${GroupSenderKeyState.TABLE} (
+            ${GroupSenderKeyState.COL_CONVERSATION_ID} TEXT PRIMARY KEY,
+            ${GroupSenderKeyState.COL_DISTRIBUTION_ID} TEXT NOT NULL,
+            ${GroupSenderKeyState.COL_EPOCH} INTEGER NOT NULL
         )
         """.trimIndent(),
         """
@@ -263,6 +318,23 @@ object Schema {
             ${PendingGroupInvites.COL_ADMINS} TEXT NOT NULL,
             ${PendingGroupInvites.COL_RECEIVED_AT} INTEGER NOT NULL,
             ${PendingGroupInvites.COL_EPOCH} INTEGER NOT NULL DEFAULT 1
+        )
+        """.trimIndent(),
+        """
+        CREATE TABLE IF NOT EXISTS ${RelayGrantsReceived.TABLE} (
+            ${RelayGrantsReceived.COL_ISSUER_ONION} TEXT PRIMARY KEY,
+            ${RelayGrantsReceived.COL_ISSUER_IDENTITY_KEY} BLOB NOT NULL,
+            ${RelayGrantsReceived.COL_ISSUED_AT} INTEGER NOT NULL,
+            ${RelayGrantsReceived.COL_EXPIRES_AT} INTEGER NOT NULL,
+            ${RelayGrantsReceived.COL_SIGNATURE} BLOB NOT NULL
+        )
+        """.trimIndent(),
+        """
+        CREATE TABLE IF NOT EXISTS ${RelayGrantsIssued.TABLE} (
+            ${RelayGrantsIssued.COL_GRANTEE_ONION} TEXT PRIMARY KEY,
+            ${RelayGrantsIssued.COL_GRANTEE_IDENTITY_KEY} BLOB NOT NULL,
+            ${RelayGrantsIssued.COL_ISSUED_AT} INTEGER NOT NULL,
+            ${RelayGrantsIssued.COL_EXPIRES_AT} INTEGER NOT NULL
         )
         """.trimIndent(),
     )

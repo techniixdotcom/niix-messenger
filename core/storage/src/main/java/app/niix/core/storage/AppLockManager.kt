@@ -7,6 +7,12 @@ enum class UnlockResult {
     SUCCESS,
     FAILED,
     DURESS,
+    /** A wrong guess was made while the local rate limiter's cooldown is active -- see
+     * [AppLockManager.unlock]. Distinct from [FAILED] so a UI that wants to (e.g.
+     * PasscodeActivity) can show a "try again in X" message instead of a generic "wrong code"
+     * one; a UI that wants to stay indistinguishable from a wrong guess either way (e.g.
+     * CalculatorActivity's disguise) can just treat this the same as [FAILED]. */
+    THROTTLED,
 }
 
 class AppLockManager internal constructor(
@@ -76,19 +82,63 @@ class AppLockManager internal constructor(
     fun unlock(passcode: CharArray): UnlockResult {
         if (!isPasscodeEnabled()) return UnlockResult.FAILED
         if (isUnlocked()) return UnlockResult.SUCCESS
-        if (matchesDuress(passcode)) return UnlockResult.DURESS
+
+        // Checked first and unconditionally, before the rate limiter below ever gets a say: a
+        // coerced unlock must always work immediately, no matter how many recent wrong guesses
+        // there were. The limiter below exists to slow down someone who doesn't know the real
+        // passcode or the duress code -- it must never be able to block the one escape hatch
+        // this feature exists for.
+        if (matchesDuress(passcode)) {
+            secretProvider.clearThrottleState()
+            return UnlockResult.DURESS
+        }
+
+        val now = System.currentTimeMillis()
+        if (throttleRemainingMillis(now) > 0) return UnlockResult.THROTTLED
+
         val deviceSecret = secretProvider.deviceSecret()
         val salt = secretProvider.passcodeSalt()
         val dbKey = deriveDbKey(passcode, salt, deviceSecret)
         return try {
             secureDatabase.openWith(dbKey)
+            secretProvider.clearThrottleState()
             UnlockResult.SUCCESS
         } catch (_: Exception) {
+            recordFailedAttempt(now)
             UnlockResult.FAILED
         } finally {
             dbKey.fill(0)
             deviceSecret.fill(0)
         }
+    }
+
+    /** Milliseconds until the next unlock attempt is allowed, or 0 if allowed right now. Safe to
+     * call before the person has typed anything (e.g. to disable a submit button or show a
+     * countdown proactively) -- this never derives a key or touches the database, just reads the
+     * small local failure counter. Never applies to the duress code itself, only to further
+     * wrong guesses -- see [unlock]. */
+    fun throttleRemainingMillis(now: Long = System.currentTimeMillis()): Long {
+        val (failCount, lastFailureAtMillis) = secretProvider.readThrottleState()
+        if (failCount < FREE_ATTEMPTS) return 0
+        val allowedAt = lastFailureAtMillis + backoffDelayMillis(failCount)
+        return (allowedAt - now).coerceAtLeast(0)
+    }
+
+    private fun recordFailedAttempt(now: Long) {
+        val (failCount, _) = secretProvider.readThrottleState()
+        secretProvider.writeThrottleState(failCount + 1, now)
+    }
+
+    /** [FREE_ATTEMPTS] wrong guesses cost nothing (typos happen); every guess after that costs
+     * exponentially longer, doubling from [BASE_DELAY_MILLIS] and capped at [MAX_DELAY_MILLIS] --
+     * the same shape as the escalating lockouts iOS/Android already use for their own PIN
+     * screens. `step` is capped before the shift purely as an overflow guard; the
+     * [MAX_DELAY_MILLIS] coercion below is what actually bounds the real-world delay. */
+    private fun backoffDelayMillis(failCount: Int): Long {
+        if (failCount < FREE_ATTEMPTS) return 0
+        val step = (failCount - FREE_ATTEMPTS).coerceAtMost(20)
+        val delay = BASE_DELAY_MILLIS shl step
+        return delay.coerceIn(0, MAX_DELAY_MILLIS)
     }
 
     /** Opens an already-set-up, passcode-disabled database with no user input needed. */
@@ -216,5 +266,8 @@ class AppLockManager internal constructor(
 
     companion object {
         private const val SALT_BYTES = 16
+        private const val FREE_ATTEMPTS = 4
+        private const val BASE_DELAY_MILLIS = 30_000L // 30s
+        private const val MAX_DELAY_MILLIS = 60L * 60 * 1000 // capped at 1 hour
     }
 }

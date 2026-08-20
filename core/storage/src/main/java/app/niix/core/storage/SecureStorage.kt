@@ -21,6 +21,8 @@ class SecureStorage private constructor(
     val blocklist: BlocklistDao by lazy { BlocklistDao(database) }
     val settings: SettingsStore by lazy { SettingsStore(database) }
     val pendingGroupInvites: PendingGroupInviteDao by lazy { PendingGroupInviteDao(database) }
+    val groupSenderKeyState: GroupSenderKeyStateDao by lazy { GroupSenderKeyStateDao(database) }
+    val relayGrants: RelayGrantDao by lazy { RelayGrantDao(database) }
 
     fun db(): SQLiteDatabase = database.open()
 

@@ -4,7 +4,6 @@ import android.content.ContentValues
 import app.niix.core.storage.Schema
 import app.niix.core.storage.SecureDatabase
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import net.zetetic.database.sqlcipher.SQLiteDatabase
 import org.signal.libsignal.protocol.IdentityKey
 import org.signal.libsignal.protocol.IdentityKeyPair
@@ -25,8 +24,6 @@ internal class DatabaseSignalProtocolStore(
     private val secureDatabase: SecureDatabase,
     private val identityManager: IdentityManager,
 ) : SignalProtocolStore {
-
-    private val senderKeys = ConcurrentHashMap<String, SenderKeyRecord>()
 
     private val db: SQLiteDatabase get() = secureDatabase.open()
 
@@ -83,6 +80,31 @@ internal class DatabaseSignalProtocolStore(
             if (!cursor.moveToFirst()) return null
             return IdentityKey(cursor.getBlob(0), 0)
         }
+    }
+
+    /** The reverse of [getIdentity]: which onion (the `name` column -- see this store's own
+     * schema doc) this device has [identityKeyBytes] on file for, or null if none matches. Used
+     * by [CryptoEngine.onionForIdentityKey], itself used by the relay feature to resolve a
+     * relay-fetched envelope's claimed sender identity key back to the onion address its
+     * pairwise Signal session is keyed by.
+     *
+     * Compares blobs in Kotlin rather than binding [identityKeyBytes] into a `rawQuery`
+     * selection-args array -- that overload only reliably binds `String` args on this driver, so
+     * binding a `ByteArray` through it risks a silent type-coercion bug. The `identities` table
+     * is bounded by contact count, so a full scan here is cheap.
+     */
+    fun findNameByIdentityKey(identityKeyBytes: ByteArray): String? {
+        db.rawQuery(
+            "SELECT ${Schema.Identities.COL_NAME}, ${Schema.Identities.COL_IDENTITY_KEY} FROM ${Schema.Identities.TABLE}",
+            null,
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                if (cursor.getBlob(1).contentEquals(identityKeyBytes)) {
+                    return cursor.getString(0)
+                }
+            }
+        }
+        return null
     }
 
     // ---------------- PreKeyStore ----------------
@@ -322,23 +344,42 @@ internal class DatabaseSignalProtocolStore(
         }
     }
 
-    // ---------------- SenderKeyStore (groups; minimal, not persisted yet) ----------------
+    // ---------------- SenderKeyStore (groups) ----------------
 
     override fun storeSenderKey(
         sender: SignalProtocolAddress,
         distributionId: UUID,
         record: SenderKeyRecord,
     ) {
-        senderKeys[senderKeyId(sender, distributionId)] = record
+        val values = ContentValues().apply {
+            put(Schema.GroupSenderKeys.COL_SENDER_NAME, sender.name)
+            put(Schema.GroupSenderKeys.COL_SENDER_DEVICE_ID, sender.deviceId)
+            put(Schema.GroupSenderKeys.COL_DISTRIBUTION_ID, distributionId.toString())
+            put(Schema.GroupSenderKeys.COL_RECORD, record.serialize())
+        }
+        db.insertWithOnConflict(
+            Schema.GroupSenderKeys.TABLE,
+            null,
+            values,
+            SQLiteDatabase.CONFLICT_REPLACE,
+        )
     }
 
     override fun loadSenderKey(
         sender: SignalProtocolAddress,
         distributionId: UUID,
-    ): SenderKeyRecord? = senderKeys[senderKeyId(sender, distributionId)]
-
-    private fun senderKeyId(sender: SignalProtocolAddress, distributionId: UUID): String =
-        "${sender.name}.${sender.deviceId}::$distributionId"
+    ): SenderKeyRecord? {
+        db.rawQuery(
+            "SELECT ${Schema.GroupSenderKeys.COL_RECORD} FROM ${Schema.GroupSenderKeys.TABLE} " +
+                "WHERE ${Schema.GroupSenderKeys.COL_SENDER_NAME} = ? AND " +
+                "${Schema.GroupSenderKeys.COL_SENDER_DEVICE_ID} = ? AND " +
+                "${Schema.GroupSenderKeys.COL_DISTRIBUTION_ID} = ?",
+            arrayOf(sender.name, sender.deviceId.toString(), distributionId.toString()),
+        ).use { cursor ->
+            if (!cursor.moveToFirst()) return null
+            return SenderKeyRecord(cursor.getBlob(0))
+        }
+    }
 
     // ---------------- shared helpers ----------------
 

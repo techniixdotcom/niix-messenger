@@ -2,6 +2,7 @@ package app.niix.core.storage
 
 import android.content.Context
 import java.io.File
+import java.nio.ByteBuffer
 import java.security.SecureRandom
 
 internal class DatabaseSecretProvider(
@@ -15,6 +16,7 @@ internal class DatabaseSecretProvider(
     private val duressSaltFile = File(dir, DURESS_SALT_FILENAME)
     private val duressVerifierFile = File(dir, DURESS_VERIFIER_FILENAME)
     private val disguiseDisabledFile = File(dir, DISGUISE_DISABLED_FILENAME)
+    private val throttleFile = File(dir, THROTTLE_STATE_FILENAME)
 
     /** Has this device ever completed setup at all (device secret exists). True forever after
      * onboarding, regardless of whether passcode protection is currently on or off. */
@@ -91,6 +93,36 @@ internal class DatabaseSecretProvider(
         dir.delete()
     }
 
+    /** (failCount, lastFailureAtMillis) for the local unlock-attempt rate limiter -- see
+     * [AppLockManager.unlock]. Defaults to (0, 0) if no failure has ever been recorded, same as
+     * every other lazily-created file here. Deliberately plain, unencrypted local files (same as
+     * the salts above): the failure count and timestamp aren't secret, and the whole point is
+     * that they must be readable before the passcode is known, i.e. before there's any key to
+     * encrypt them with. */
+    @Synchronized
+    fun readThrottleState(): Pair<Int, Long> {
+        if (!throttleFile.exists()) return 0 to 0L
+        val bytes = throttleFile.readBytes()
+        if (bytes.size != THROTTLE_STATE_BYTES) return 0 to 0L
+        val buffer = ByteBuffer.wrap(bytes)
+        val failCount = buffer.int
+        val lastFailureAtMillis = buffer.long
+        return failCount to lastFailureAtMillis
+    }
+
+    @Synchronized
+    fun writeThrottleState(failCount: Int, lastFailureAtMillis: Long) {
+        val buffer = ByteBuffer.allocate(THROTTLE_STATE_BYTES)
+        buffer.putInt(failCount)
+        buffer.putLong(lastFailureAtMillis)
+        writeAtomically(throttleFile, buffer.array())
+    }
+
+    @Synchronized
+    fun clearThrottleState() {
+        throttleFile.delete()
+    }
+
     private fun writeAtomically(target: File, data: ByteArray) {
         val tmp = File(target.parentFile, target.name + ".tmp")
         tmp.outputStream().use { it.write(data); it.fd.sync() }
@@ -108,6 +140,8 @@ internal class DatabaseSecretProvider(
         private const val DURESS_SALT_FILENAME = "duress.salt"
         private const val DURESS_VERIFIER_FILENAME = "duress.verifier"
         private const val DISGUISE_DISABLED_FILENAME = "disguise.off"
+        private const val THROTTLE_STATE_FILENAME = "unlock.throttle"
+        private const val THROTTLE_STATE_BYTES = 12 // 4-byte failCount + 8-byte lastFailureAtMillis
         private const val STORAGE_SUBDIR = "niix-secure"
     }
 }
