@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:background="@color/niix_bg">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/niix_bg"
+        app:navigationIcon="@android:drawable/ic_menu_revert"
+        app:title="@string/action_settings"
+        app:titleTextColor="@color/niix_on_surface" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="28dp">
+
+            <TextView style="@style/SettingsSection" android:text="@string/settings_section_profile" />
+
+            <com.google.android.material.card.MaterialCardView style="@style/SettingsCard">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                    <LinearLayout android:id="@+id/row_profile_photo" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_profile_photo" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_profile_photo_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/setting_profile_photo" />
+                    </LinearLayout>
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+                    <LinearLayout android:id="@+id/row_remove_photo" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <TextView style="@style/SettingsRowTitle" android:text="@string/setting_remove_photo" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView style="@style/SettingsSection" android:text="@string/settings_section_privacy" />
+
+            <com.google.android.material.card.MaterialCardView style="@style/SettingsCard">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_allowlist_only" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_allowlist_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_allowlist" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_notification_privacy" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_notif_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_notif_privacy" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_screenshots" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_screenshots_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_screenshots" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_relay_mode" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_relay_mode_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_relay_mode" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_cover_traffic" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_cover_traffic_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_cover_traffic" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView style="@style/SettingsSection" android:text="@string/settings_section_security" />
+
+            <com.google.android.material.card.MaterialCardView style="@style/SettingsCard">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_require_passcode" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_require_passcode_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_require_passcode" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_disguise" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_disguise_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_disguise" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:id="@+id/row_duress" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_set_duress" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_duress_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/setting_set_duress" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:id="@+id/row_wipe_now" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_wipe_now" android:textColor="@color/niix_danger" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_wipe_now_desc" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView style="@style/SettingsSection" android:text="@string/settings_section_backup" />
+
+            <com.google.android.material.card.MaterialCardView style="@style/SettingsCard">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <LinearLayout android:id="@+id/row_export" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_export" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_export_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/setting_export" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:id="@+id/row_import" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_import" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_import_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/setting_import" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView style="@style/SettingsSection" android:text="@string/settings_section_updates" />
+
+            <com.google.android.material.card.MaterialCardView style="@style/SettingsCard">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_update_check" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_update_check_desc" />
+                        </LinearLayout>
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_update_check" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="12dp" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:id="@+id/row_check_update_now" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_check_update_now" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_check_update_now_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/setting_check_update_now" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:id="@+id/row_diagnostics" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/setting_diagnostics" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_diagnostics_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/setting_diagnostics" />
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="16dp">
+                        <TextView android:id="@+id/text_app_version" style="@style/SettingsRowDesc" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
