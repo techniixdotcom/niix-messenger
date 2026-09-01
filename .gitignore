@@ -1,0 +1,21 @@
+# --- Never commit these (secrets / machine-specific) ---
+keystore.properties
+*.jks
+*.pem
+local.properties
+
+# --- Build output / generated (Gradle recreates all of this) ---
+.gradle/
+build/
+*/build/
+*/*/build/
+.toolchain/
+gradle/wrapper/gradle-wrapper.jar
+
+# --- Editor / OS cruft ---
+.idea/
+*.iml
+.DS_Store
+
+# --- Logs ---
+*.log

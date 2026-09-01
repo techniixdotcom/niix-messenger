@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="niix_bg">#0A0E13</color>
+    <color name="niix_surface">#12171F</color>
+    <color name="niix_surface_variant">#1A212C</color>
+    <color name="niix_on_surface">#E4E9F0</color>
+    <color name="niix_on_surface_muted">#6B7686</color>
+    <color name="niix_primary">#33E39F</color>
+    <color name="niix_on_primary">#03150D</color>
+    <color name="niix_accent">#FF3D7F</color>
+    <color name="niix_green">#33E39F</color>
+    <color name="niix_pink">#FF3D7F</color>
+    <color name="niix_bubble_out">#1C4034</color>
+    <color name="niix_bubble_in">#1A212C</color>
+    <color name="niix_bubble_neutral">#161B24</color>
+    <color name="niix_message_out_text">#FFFFFF</color>
+    <color name="niix_danger">#FF5A5A</color>
+    <color name="niix_amber">#E5A50A</color>
+    <color name="niix_divider">#1E2530</color>
+    <color name="niix_calc_operator">#33E39F</color>
+    <color name="niix_calc_key">#1A212C</color>
+    <color name="niix_calc_key_alt">#232C38</color>
+    <color name="niix_search_highlight">#4D33E39F</color>
+</resources>
