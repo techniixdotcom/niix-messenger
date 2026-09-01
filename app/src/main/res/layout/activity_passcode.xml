@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:background="@color/niix_bg"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:text="@string/app_name"
+        android:textColor="@color/niix_green"
+        android:textStyle="bold"
+        android:textSize="24sp"
+        android:letterSpacing="0.06" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp"
+        android:text="@string/passcode_prompt"
+        android:textColor="@color/niix_on_surface_muted"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/passcode_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="@string/passcode_placeholder"
+        android:textColor="@color/niix_on_surface"
+        android:textSize="28sp"
+        android:letterSpacing="0.2"
+        android:gravity="center" />
+
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+
+    <GridLayout
+        android:id="@+id/passcode_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="24dp"
+        android:columnCount="3"
+        android:rowCount="4">
+
+        <Button android:text="1" style="@style/CalcKey" />
+        <Button android:text="2" style="@style/CalcKey" />
+        <Button android:text="3" style="@style/CalcKey" />
+        <Button android:text="4" style="@style/CalcKey" />
+        <Button android:text="5" style="@style/CalcKey" />
+        <Button android:text="6" style="@style/CalcKey" />
+        <Button android:text="7" style="@style/CalcKey" />
+        <Button android:text="8" style="@style/CalcKey" />
+        <Button android:text="9" style="@style/CalcKey" />
+        <Button android:text="⌫" style="@style/CalcKeyAlt" />
+        <Button android:text="0" style="@style/CalcKey" />
+        <Button android:id="@+id/passcode_unlock" android:text="✓" style="@style/CalcKeyEquals" />
+    </GridLayout>
+</LinearLayout>
