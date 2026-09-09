@@ -1,0 +1,21 @@
+NiiX is a private messenger that runs entirely over Tor. It does not ask for a phone number, an email address, or an account of any kind, and there is no server that sees your contacts, your messages, or who you are talking to.
+
+Your identity is a Tor onion address and a Signal protocol key pair, both generated on your own device the first time you open the app. You share your code with people directly. There is no directory to look anyone up in.
+
+Features:
+
+* Direct messages, group chats and encrypted attachments, end-to-end encrypted using the Signal protocol
+* Post-quantum session establishment, so traffic recorded now cannot be decrypted later by a quantum computer
+* Messages route over Tor straight to the recipient's onion address, so neither side learns the other's IP address
+* Disappearing messages, with a timer any member of a conversation can set
+* Offline delivery through a small peer-to-peer relay network rather than a central server. Relayed messages stay end-to-end encrypted; a relay stores ciphertext and learns nothing about it
+* A duress passcode that wipes your data and opens a decoy account instead
+* An optional calculator disguise, which appears on your home screen and works as a real calculator
+* Screenshot protection, on by default
+* Encrypted local backup, protected by a passphrase you choose
+
+Everything stored on your device sits in a single database encrypted with SQLCipher. The key is derived from your passcode with Argon2id and combined with a secret held in the phone's hardware-backed keystore, so the database cannot be attacked offline by copying it to another machine.
+
+The app writes no logs to storage. There is an optional diagnostics view for troubleshooting, but it lives only in memory, is erased when the app locks, and is never transmitted anywhere.
+
+A note on assurance: this is a security-sensitive codebase that has not had an independent professional security audit. The properties above describe how it is built, not a guarantee that the implementation is free of mistakes. The source is available; read it and question it.
