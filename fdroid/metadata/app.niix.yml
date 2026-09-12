@@ -1,0 +1,32 @@
+Categories:
+  - Internet
+  - Security
+License: GPL-3.0-only
+AuthorName: TechniiX
+SourceCode: https://github.com/techniixdotcom/niix-messenger
+IssueTracker: https://github.com/techniixdotcom/niix-messenger/issues
+
+AutoName: NiiX
+
+RepoType: git
+Repo: https://github.com/techniixdotcom/niix-messenger.git
+
+Builds:
+  - versionName: 0.6.9
+    versionCode: 3509762
+    commit: v0.6.9
+    subdir: app
+    gradle:
+      - yes
+    # F-Droid signs with its own key, so no keystore is present at build time. Without this the
+    # build fails deliberately -- app/build.gradle.kts refuses to emit an unsigned release APK by
+    # accident, since an unsigned APK can be signed later by anyone. This makes the omission
+    # explicit rather than accidental, which is the distinction that check exists to draw.
+    prebuild:
+      - echo "niixUnsigned=true" >> ../gradle.properties
+    ndk: r27c
+
+AutoUpdateMode: Version v%v
+UpdateCheckMode: Tags ^v[0-9.]+$
+CurrentVersion: 0.6.9
+CurrentVersionCode: 3509762
