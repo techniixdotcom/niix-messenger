@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Niix" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/niix_primary</item>
+        <item name="colorOnPrimary">@color/niix_on_primary</item>
+        <item name="colorPrimaryContainer">@color/niix_primary</item>
+        <item name="colorOnPrimaryContainer">@color/niix_on_primary</item>
+        <item name="colorSecondary">@color/niix_pink</item>
+        <item name="colorSurface">@color/niix_surface</item>
+        <item name="colorOnSurface">@color/niix_on_surface</item>
+        <item name="colorSurfaceVariant">@color/niix_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/niix_on_surface_muted</item>
+        <item name="android:colorBackground">@color/niix_bg</item>
+        <item name="colorError">@color/niix_danger</item>
+        <item name="android:statusBarColor">@color/niix_bg</item>
+        <item name="android:navigationBarColor">@color/niix_bg</item>
+        <item name="android:windowBackground">@color/niix_bg</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+    </style>
+
+    <style name="Theme.Niix.Calculator" parent="Theme.Niix">
+        <item name="android:windowBackground">@color/niix_bg</item>
+    </style>
+</resources>
