@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Niix" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/niix_primary</item>
+        <item name="colorOnPrimary">@color/niix_on_primary</item>
+        <item name="colorPrimaryContainer">@color/niix_primary</item>
+        <item name="colorOnPrimaryContainer">@color/niix_on_primary</item>
+        <item name="colorSecondary">@color/niix_pink</item>
+        <item name="colorSurface">@color/niix_surface</item>
+        <item name="colorOnSurface">@color/niix_on_surface</item>
+        <item name="colorSurfaceVariant">@color/niix_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/niix_on_surface_muted</item>
+        <item name="android:colorBackground">@color/niix_bg</item>
+        <item name="colorError">@color/niix_danger</item>
+        <item name="android:statusBarColor">@color/niix_bg</item>
+        <item name="android:navigationBarColor">@color/niix_bg</item>
+        <item name="android:windowBackground">@color/niix_bg</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+
+        <!-- Dialogs inherit Material's default grey surface, which is a different colour from
+             the cards and popup menus everywhere else in the app. Pointing both dialog theme
+             attributes at one style is what makes a confirmation look like it belongs to the
+             same app as the screen behind it. -->
+        <item name="materialAlertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="android:alertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="alertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="popupMenuStyle">@style/Widget.Niix.PopupMenu</item>
+        <item name="android:popupMenuStyle">@style/Widget.Niix.PopupMenu</item>
+    </style>
+
+    <style name="Theme.Niix.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/niix_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/niix_surface</item>
+        <item name="colorOnSurface">@color/niix_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/niix_on_surface_muted</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+        <item name="alertDialogStyle">@style/Widget.Niix.AlertDialog</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Niix.DialogButton.Primary</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Niix.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Niix.DialogButton</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/TextAppearance.Niix.DialogTitle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/TextAppearance.Niix.DialogBody</item>
+    </style>
+
+    <style name="Widget.Niix.AlertDialog" parent="MaterialAlertDialog.Material3">
+        <!-- Matches SettingsCard, so a dialog reads as the same kind of object as the rows it
+             was opened from. -->
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Niix.Dialog</item>
+        <item name="backgroundTint">@color/niix_surface</item>
+    </style>
+
+    <style name="ShapeAppearance.Niix.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="TextAppearance.Niix.DialogTitle" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textColor">@color/niix_on_surface</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TextAppearance.Niix.DialogBody" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:textColor">@color/niix_on_surface_muted</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+
+    <!-- Green for the action that proceeds, muted for the one that backs out. Destructive
+         confirmations pass a red colour explicitly at the call site. -->
+    <style name="Widget.Niix.DialogButton.Primary" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/niix_primary</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+    <style name="Widget.Niix.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/niix_on_surface_muted</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+    <style name="Widget.Niix.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_background</item>
+    </style>
+
+    <style name="Theme.Niix.Calculator" parent="Theme.Niix">
+        <item name="android:windowBackground">@color/niix_bg</item>
+    </style>
+</resources>
