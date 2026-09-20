@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Niix" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/niix_primary</item>
+        <item name="colorOnPrimary">@color/niix_on_primary</item>
+        <item name="colorPrimaryContainer">@color/niix_primary</item>
+        <item name="colorOnPrimaryContainer">@color/niix_on_primary</item>
+        <item name="colorSecondary">@color/niix_pink</item>
+        <item name="colorSurface">@color/niix_surface</item>
+        <item name="colorOnSurface">@color/niix_on_surface</item>
+        <item name="colorSurfaceVariant">@color/niix_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/niix_on_surface_muted</item>
+        <item name="android:colorBackground">@color/niix_bg</item>
+        <item name="colorError">@color/niix_danger</item>
+        <item name="android:statusBarColor">@color/niix_bg</item>
+        <item name="android:navigationBarColor">@color/niix_bg</item>
+        <item name="android:windowBackground">@color/niix_bg</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+
+        <!-- Dialogs inherit Material's default grey surface, which is a different colour from
+             the cards and popup menus everywhere else in the app. Pointing both dialog theme
+             attributes at one style is what makes a confirmation look like it belongs to the
+             same app as the screen behind it. -->
+        <item name="materialAlertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="android:alertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="alertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="popupMenuStyle">@style/Widget.Niix.PopupMenu</item>
+        <item name="android:popupMenuStyle">@style/Widget.Niix.PopupMenu</item>
+    </style>
+
+    <!-- A full dialog theme, not a ThemeOverlay.
+         ThemeOverlay.Material3.MaterialAlertDialog only applies to MaterialAlertDialogBuilder.
+         Every dialog here is built with AppCompat's AlertDialog.Builder, which resolves
+         alertDialogTheme and expects a complete theme, so the overlay was silently ignored and
+         dialogs kept Material's default grey. -->
+    <!-- Colours only, no style overrides.
+         This previously set alertDialogStyle to a MaterialAlertDialog style, which crashed every
+         dialog in the app: AppCompat's AlertController inflates that style expecting AppCompat
+         attributes (listLayout, buttonPanelSideLayout) that a Material3 dialog style does not
+         define. Theme attributes are safe because they are read rather than inflated; swapping
+         the layout out from under AppCompat is not. -->
+    <style name="Theme.Niix.Dialog" parent="Theme.Material3.Dark.Dialog.Alert">
+        <item name="android:colorBackground">@color/niix_surface</item>
+        <item name="colorSurface">@color/niix_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/niix_surface</item>
+        <item name="colorOnSurface">@color/niix_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/niix_on_surface_muted</item>
+        <item name="android:textColorPrimary">@color/niix_on_surface</item>
+        <item name="android:textColorSecondary">@color/niix_on_surface_muted</item>
+        <item name="colorPrimary">@color/niix_primary</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+    </style>
+
+
+
+
+
+    <!-- Green for the action that proceeds, muted for the one that backs out. Destructive
+         confirmations pass a red colour explicitly at the call site. -->
+
+
+    <style name="Widget.Niix.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_background</item>
+    </style>
+
+    <style name="Theme.Niix.Calculator" parent="Theme.Niix">
+        <item name="android:windowBackground">@color/niix_bg</item>
+    </style>
+</resources>
