@@ -1,5 +1,7 @@
 # NiiX
 
+by: cuteLiLi / techniix / QuacK
+
 A private messenger for Android. It runs entirely over Tor, and asks for no phone number, no
 email address, and no account of any kind. There is no server that sees your contacts, your
 messages, or who you are talking to — because there is no server.
