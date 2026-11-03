@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CalcKey" parent="Widget.Material3.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">66dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_margin">6dp</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/niix_on_surface</item>
+        <item name="backgroundTint">@color/niix_calc_key</item>
+        <item name="cornerRadius">18dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="CalcKeyAlt" parent="CalcKey">
+        <item name="backgroundTint">@color/niix_calc_key_alt</item>
+        <item name="android:textColor">@color/niix_on_surface_muted</item>
+    </style>
+
+    <style name="CalcKeyOp" parent="CalcKey">
+        <item name="backgroundTint">@color/niix_surface_raised</item>
+        <item name="android:textColor">@color/niix_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CalcKeyEquals" parent="CalcKey">
+        <item name="backgroundTint">@color/niix_primary</item>
+        <item name="android:textColor">@color/niix_on_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Pink, matching the GROUPS and CONTACTS headers on the home screen. They were grey here
+         and pink there, which made the two screens look like different apps. -->
+    <style name="SettingsSection">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/niix_accent</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:layout_marginStart">20dp</item>
+        <item name="android:layout_marginTop">22dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <style name="SettingsCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginHorizontal">14dp</item>
+        <item name="cardBackgroundColor">@color/niix_surface</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">0dp</item>
+        <!-- Glass with a thin pink edge, as on niixa.org. -->
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/niix_edge</item>
+    </style>
+
+    <style name="SettingsRowTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/niix_on_surface</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SettingsRowDesc">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/niix_on_surface_muted</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <!-- These wrap to two or three lines often, and monospace at 13sp packs tightly enough
+             that the lines run together without a little extra leading. -->
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+
+    <!-- The NiiX wordmark, styled like the niixa logo: heavy JetBrains Mono in white with a pink
+         glow, and the subtitle in pink. The font is bundled under the SIL Open Font License; see
+         res/font/jetbrains_mono.xml. Both screens use these styles, so they cannot drift apart. -->
+    <style name="NiixWordmark">
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">800</item>
+        <item name="android:textColor">@color/niix_on_surface</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:shadowColor">@color/niix_edge</item>
+        <item name="android:shadowRadius">22</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">0</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="NiixWordmarkSub">
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textColor">@color/niix_pink</item>
+        <item name="android:letterSpacing">0.3</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+</resources>

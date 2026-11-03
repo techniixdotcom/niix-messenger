@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The niixa look, shared with niixa.org: black, dark glass (#121218) with a thin pink edge, and
+     pink #FF0A6C for whatever is selected or on. Green is the terminal's colour there and has no
+     place in the app. -->
+<resources>
+    <!-- Surfaces -->
+    <color name="niix_bg">#000000</color>
+    <color name="niix_surface">#121218</color>
+    <color name="niix_surface_variant">#0B0B10</color>
+    <color name="niix_surface_raised">#1A1A22</color>
+
+    <!-- Text: the site's text, dim and a readable version of its mute. The site's own mute,
+         #5A5A68, is too faint on black for timestamps people need to read. -->
+    <color name="niix_on_surface">#F2F2F5</color>
+    <color name="niix_on_surface_muted">#A0A0AE</color>
+    <color name="niix_on_surface_faint">#7A7A88</color>
+
+    <!-- Pink: selected, on, the action that proceeds -->
+    <color name="niix_primary">#FF0A6C</color>
+    <color name="niix_on_primary">#FFFFFF</color>
+    <color name="niix_accent">#FF0A6C</color>
+    <color name="niix_accent_light">#FF4D94</color>
+    <!-- Alias of niix_accent; both names are in use and pointing one at the other keeps them
+         from drifting apart. -->
+    <color name="niix_pink">@color/niix_accent</color>
+
+    <!-- The pink edge: thin outlines on glass (35%), a stronger one for focus and what is
+         selected (60%), and the pink wash behind something selected (16%). -->
+    <color name="niix_edge">#59FF0A6C</color>
+    <color name="niix_edge_strong">#99FF0A6C</color>
+    <color name="niix_selected">#29FF0A6C</color>
+
+    <!-- Lines: the site's 7% and 13% white -->
+    <color name="niix_divider">#12FFFFFF</color>
+    <color name="niix_line">#21FFFFFF</color>
+
+    <!-- Messages: outgoing in pink-washed glass, incoming in plain glass. -->
+    <color name="niix_bubble_out">@color/niix_selected</color>
+    <color name="niix_bubble_in">@color/niix_surface</color>
+    <color name="niix_message_out_text">#FFFFFF</color>
+
+    <!-- A true red rather than the site's #FF3B6B. That shade sits right next to the pink, and
+         here red marks the irreversible actions (wipe, delete, block) whose buttons sit where
+         pink ones normally do. A warning that looks like the ordinary colour stops warning. -->
+    <color name="niix_danger">#FF453A</color>
+
+    <!-- Calculator disguise keys -->
+    <color name="niix_calc_key">#121218</color>
+    <color name="niix_calc_key_alt">#1A1A22</color>
+
+    <color name="niix_search_highlight">#4DFF0A6C</color>
+</resources>
