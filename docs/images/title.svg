@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="96" viewBox="0 0 260 96" role="img" aria-label="NiiX">
+  <!-- The README's title in NiiX pink. GitHub strips colour from Markdown, so it's drawn here. -->
+  <defs>
+    <filter id="glow" x="-10%" y="-40%" width="120%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <text x="130" y="68" text-anchor="middle" fill="#FF0A6C" filter="url(#glow)"
+    font-family="'JetBrains Mono', 'DejaVu Sans Mono', Menlo, Consolas, monospace"
+    font-size="72" font-weight="800">NiiX</text>
+</svg>
