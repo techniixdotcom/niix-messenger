@@ -1,0 +1,3 @@
+-keep class net.zetetic.database.** { *; }
+-keep class com.google.crypto.tink.** { *; }
+-dontwarn com.google.crypto.tink.**
