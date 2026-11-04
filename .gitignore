@@ -1,0 +1,34 @@
+# --- Never commit these (secrets / machine-specific) ---
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*.apk
+*.aab
+*.sig
+local.properties
+
+# --- Build output / generated (Gradle recreates all of this) ---
+.gradle/
+build/
+*/build/
+*/*/build/
+.toolchain/
+
+# --- Editor / OS cruft ---
+.idea/
+*.iml
+.DS_Store
+
+# --- Logs ---
+*.log
+test.log
+build-test-full.log
+device-test-results/
+
+# Play upload key and build output. Never committed.
+keystore*.properties
+dist/

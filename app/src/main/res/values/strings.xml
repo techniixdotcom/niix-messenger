@@ -1,0 +1,445 @@
+<resources>
+    <string name="app_name" translatable="false">NiiX</string>
+    <string name="brand_subtitle" translatable="false">MESSENGER</string>
+    <string name="label_fingerprint">Identity fingerprint</string>
+    <string name="action_add_contact">Add contact</string>
+    <string name="action_safety_number">Safety number</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_mark_verified">Mark verified</string>
+    <string name="lock_mismatch">Passcodes do not match</string>
+    <string name="lock_too_short">Use at least %1$d characters</string>
+    <string name="hint_contact_name">Contact name</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_close">Close</string>
+    <string name="dialog_save">Save</string>
+    <string name="setting_allowlist_only">Only accept messages from known contacts</string>
+    <string name="setting_notification_privacy">Hide app activity from lock screen</string>
+    <string name="setting_set_duress">Set duress passcode…</string>
+    <string name="setting_export">Export encrypted backup</string>
+    <string name="setting_import">Import encrypted backup</string>
+    <string name="duress_explanation">If this passcode is ever entered at the lock screen, all data on this device is permanently wiped and the app opens into a fresh account seeded with plausible everyday conversations, so it looks like it worked normally. Choose something distinct from your real passcode.</string>
+    <string name="backup_path_hint">File location:\n%1$s</string>
+    <string name="backup_passphrase_hint">Backup passphrase (12+ characters)</string>
+    <string name="backup_passphrase_confirm">Repeat the passphrase</string>
+    <string name="backup_passphrase_mismatch">The passphrases don\'t match</string>
+    <string name="toast_contact_added">Contact added</string>
+    <string name="toast_no_session">No session with that contact yet</string>
+    <string name="toast_verified">Contact marked verified</string>
+    <string name="toast_duress_set">Duress passcode set</string>
+    <string name="toast_exported">Backup exported</string>
+    <string name="toast_imported">Backup imported</string>
+    <string name="toast_failed">Failed: %1$s</string>
+    <string name="notif_channel_name">Connection</string>
+    <string name="notif_running">Connected</string>
+    <string name="notif_running_private">Running</string>
+    <string name="notif_connecting">Connecting… %1$d%%</string>
+    <string name="default_username">Me</string>
+    <string name="onboarding_subtitle">Create your private, post-quantum encrypted identity. No phone number, no email.</string>
+    <string name="onboarding_hint">The passcode is optional. Without one NiiX opens straight away; with one (at least 8 digits) nothing can be read without it. You can change this later in Settings. The duress passcode, also optional, wipes everything if it\'s entered at unlock.</string>
+    <string name="onboarding_create">Create identity</string>
+    <string name="onboarding_creating">Creating…</string>
+    <string name="duress_needs_passcode">A duress passcode only works together with a passcode</string>
+    <!-- Lock screen and setup progress, shown terminal-style. -->
+    <string name="console_ok">ok</string>
+    <string name="console_failed">failed</string>
+    <string name="console_incorrect">incorrect passcode</string>
+    <string name="step_setup_passcode">deriving key from passcode (Argon2id, 64 MiB) and creating the encrypted database</string>
+    <string name="step_setup_device">creating the encrypted database</string>
+    <string name="step_profile">saving profile</string>
+    <string name="step_duress">setting up duress passcode (Argon2id)</string>
+    <string name="step_keys">generating identity keys and Kyber-1024 prekeys</string>
+    <string name="step_ready">done; Tor connects in the background</string>
+    <string name="step_unlock">deriving key (Argon2id, 64 MiB) and opening the database</string>
+    <string name="step_open">opening the encrypted database</string>
+    <string name="onboarding_failed">Could not create identity</string>
+    <string name="hint_username">Username (others may share the same name)</string>
+    <string name="hint_passcode_digits">Passcode (digits)</string>
+    <string name="hint_passcode_confirm">Confirm passcode</string>
+    <string name="hint_duress_optional">Duress passcode (optional)</string>
+    <string name="duress_invalid">Duress passcode must be 6+ digits and different from your passcode</string>
+    <string name="no_messages">No messages yet</string>
+    <string name="message_deleted">This message was deleted</string>
+    <string name="attachment_label">[Attachment]</string>
+    <string name="menu_my_code">My code</string>
+    <string name="menu_block">Block contact</string>
+    <string name="chat_hint">Message</string>
+    <string name="chat_send">Send</string>
+    <string name="safety_number_explainer">Compare this number with your contact in person or over a trusted channel. If it matches on both devices, your conversation is verified end-to-end.</string>
+    <string name="toast_blocked">Contact blocked</string>
+    <string name="add_contact_hint">Paste the share code from the person you want to add. You can get yours from menu → My code.</string>
+    <string name="hint_share_code">Share code</string>
+    <string name="add_contact_need_code">Paste a share code first</string>
+    <string name="label_share_code">Your share code</string>
+    <string name="action_copy_code">Copy share code</string>
+    <string name="share_code_pending">Your address appears once the network connects (Tor).</string>
+    <string name="toast_copied">Copied</string>
+    <string name="action_scan_qr">Scan QR code</string>
+    <string name="scan_prompt">Point the camera at a NiiX QR code</string>
+    <string name="scan_captured">Code captured</string>
+    <string name="menu_disappearing">Disappearing messages</string>
+    <string name="delete_for_me">Delete for me</string>
+    <string name="delete_for_everyone">Delete for everyone</string>
+    <string name="toast_deleted">Deleted</string>
+    <string name="timer_title">Disappear after</string>
+    <string name="timer_off">Off</string>
+    <string name="timer_5min">5 minutes</string>
+    <string name="timer_1hour">1 hour</string>
+    <string name="timer_1day">1 day</string>
+    <string name="toast_timer_set">Timer updated</string>
+    <string name="notif_messages_channel">Messages</string>
+    <!-- Never the sender or the text, so nothing leaks onto the lock screen. -->
+    <string name="notif_new_message_generic">New message</string>
+    <string name="menu_rename">Rename contact</string>
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_section_security">Security</string>
+    <string name="settings_section_backup">Backup</string>
+    <string name="settings_section_updates">Updates</string>
+    <string name="setting_allowlist_desc">Only receive messages from people you have added.</string>
+    <string name="setting_notif_desc">Keeps the ongoing notification off your lock screen. Message notifications never show the sender or content.</string>
+    <string name="setting_duress_desc">A separate passcode that silently wipes everything.</string>
+    <string name="setting_export_desc">Save an encrypted copy of your messages and keys.</string>
+    <string name="setting_update_check">Check for updates</string>
+    <string name="setting_update_check_desc">Checks GitHub for new versions. No other network activity.</string>
+    <string name="setting_disconnect_locked">Disconnect when locked</string>
+    <string name="setting_disconnect_locked_desc">Nothing can reach this device while the app is locked. Messages arrive when you unlock.</string>
+    <string name="setting_update_over_tor">Update over Tor</string>
+    <string name="setting_update_over_tor_desc">Routes update checks through Tor. Slower, but hides that this device runs NiiX. Messages always use Tor.</string>
+    <string name="setting_check_update_now">Check now</string>
+    <string name="setting_remote_wipe">Remote wipe…</string>
+    <string name="setting_remote_wipe_desc">Off. Let nominated contacts erase this device remotely.</string>
+    <string name="setting_remote_wipe_on">On. %1$d nominated contact(s) can erase this device.</string>
+    <string name="remote_wipe_title">Remote wipe</string>
+    <string name="remote_wipe_explain">When on, a contact you nominate can erase this device remotely.\n\nOnly contacts you nominate can do this, and they are told when you nominate them. Revoking takes effect immediately.\n\nNothing is ever sent back, so the sender can\'t tell whether it worked, or even whether this device exists.</string>
+    <string name="remote_wipe_enable">Turn on</string>
+    <string name="remote_wipe_disable">Turn off</string>
+    <string name="toast_verify_no_identity">Can\'t verify yet. Exchange a message with this contact first.</string>
+    <string name="remote_wipe_about">How this works…</string>
+    <string name="remote_wipe_nobody_nominated_you">No contact has nominated this device to erase theirs.\n\nThey have to nominate you in their own settings first. You cannot wipe a device that has not asked you to.</string>
+    <string name="remote_wipe_send">Wipe another device…</string>
+    <string name="remote_wipe_send_body">This will ask %1$s to erase everything on their device.\n\nIt cannot be undone, and you won\'t get any confirmation either way: a wiped device looks exactly like one that\'s switched off.</string>
+    <string name="remote_wipe_send_confirm">Send wipe request</string>
+    <string name="remote_wipe_sent">Request sent. There is no confirmation by design.</string>
+    <string name="remote_wipe_no_identity">Exchange a message with this contact first, so the permission can be tied to their identity.</string>
+    <string name="remote_wipe_nominate">Nominate a contact…</string>
+    <string name="remote_wipe_manage">Nominated contacts…</string>
+    <string name="remote_wipe_none_nominated">No contacts nominated yet</string>
+    <string name="remote_wipe_revoke">Remove %1$s</string>
+    <string name="remote_wipe_revoked">Removed. They can no longer erase this device.</string>
+    <string name="remote_wipe_nominated_toast">Nominated. They can now erase this device.</string>
+    <string name="setting_wipe_no_confirm">Wipe without confirming</string>
+    <string name="setting_wipe_no_confirm_desc">Skip the confirmation on the wipe button. Faster in an emergency, easier to hit by accident.</string>
+    <string name="action_copy">Copy text</string>
+    <string name="message_copied">Copied</string>
+    <string name="action_reply">Reply</string>
+    <string name="reply_banner">Replying to: %1$s</string>
+    <string name="reply_original_unavailable">Original message unavailable</string>
+    <string name="attachment_unavailable">Attachment no longer available</string>
+    <string name="message_tap_to_reveal">Tap to reveal</string>
+    <string name="setting_blur_messages">Blur new messages</string>
+    <string name="setting_blur_messages_desc">New messages stay hidden until tapped. Revealing one starts its disappearing timer.</string>
+    <string name="profile_change_name">Change display name</string>
+    <string name="profile_change_name_body">This is the name your contacts see. It isn\'t an identity. Two people can use the same name, and changing it doesn\'t change who you are to anyone. Your contacts are told the new name straight away.</string>
+    <string name="profile_name_changed">Name changed. Your contacts have been told.</string>
+    <string name="profile_name_invalid">Name cannot be empty</string>
+    <string name="profile_change_photo">Change profile photo</string>
+    <string name="profile_remove_photo">Remove profile photo</string>
+    <string name="profile_my_code">My code</string>
+    <string name="profile_photo">Profile photo</string>
+    <string name="profile_photo_hint_view">Tap the photo to see it larger</string>
+    <string name="profile_photo_hint_add">Tap the photo to add one</string>
+    <string name="profile_name_desc">The name your contacts see</string>
+    <string name="profile_code_desc">Tap to show it full size, or to copy your share code</string>
+    <string name="profile_remove_photo_confirm">Remove your profile photo? Your contacts will see your initial instead.</string>
+    <string name="conversation_mute">Mute notifications</string>
+    <string name="conversation_unmute">Unmute notifications</string>
+    <string name="conversation_muted">Muted. Messages still arrive.</string>
+    <string name="conversation_unmuted">Unmuted</string>
+    <string name="setting_source">Source code</string>
+    <string name="setting_source_full_url" translatable="false">https://github.com/techniixdotcom/niix-messenger</string>
+    <string name="setting_source_no_browser">No browser available to open the link</string>
+    <string name="setting_source_url" translatable="false">github.com/techniixdotcom/niix-messenger</string>
+    <string name="settings_section_about">ABOUT</string>
+    <string name="setting_feedback">Report a bug or request a feature</string>
+    <string name="setting_feedback_desc">Opens the issues page on GitHub in your browser</string>
+    <string name="setting_donate">Donate (Monero)</string>
+    <string name="donate_monero_address" translatable="false">47rUgJ3q7DvUTWDQQ2BteSRxLDkLutV78YziycFagKnP1S7wnT9T9R6fo5ti6zFh6BcLfxNYDJsGqJXq85GghUnRNSwXX19</string>
+    <string name="donate_monero_body">NiiX is free and has no funding behind it. If it is useful to you, this is the Monero address:\n\n%1$s\n\nCheck the address against the one on the project page before sending anything. Nobody is asked to donate, and nothing in the app changes if you do.</string>
+    <string name="donate_copy">Copy address</string>
+    <string name="donate_copied">Address copied</string>
+    <string name="setting_donate_desc">Monero address for supporting development</string>
+    <string name="setting_diagnostics">Diagnostics</string>
+    <string name="setting_diagnostics_desc">Recent activity, kept in memory only. Erased when the app locks.</string>
+    <string name="diagnostics_copied">Copied</string>
+    <string name="diagnostics_copy">Copy</string>
+    <string name="update_not_connected">Not connected to Tor yet. Wait for the connection to finish, then try again.</string>
+    <string name="setting_app_version">Version %1$s (%2$d)\nSigned with: %3$s</string>
+    <string name="setting_check_update_now_desc">Every release is cryptographically signed; an update is never installed if that signature doesn\'t check out.</string>
+    <string name="update_checking">Checking for updates over Tor…</string>
+    <string name="update_up_to_date">You\'re on the latest version.</string>
+    <string name="update_disabled_first">Turn on \"Check for updates\" first.</string>
+    <string name="update_available_title">Update available: %1$s</string>
+    <string name="update_install">Install</string>
+    <string name="refresh_offline">Not connected yet. New messages will arrive once the connection is up.</string>
+    <string name="refresh_still_checking">Still checking. Anything new will appear when it arrives.</string>
+    <string name="update_downloading_title">Downloading update</string>
+    <string name="update_connecting">Connecting…</string>
+    <string name="update_downloading_percent">Downloading… %1$d%%</string>
+    <string name="update_downloading_unknown">Downloading…</string>
+    <string name="update_downloading_size" translatable="false">%1$s / %2$s</string>
+    <string name="update_verifying">Verifying signature…</string>
+    <string name="update_verified_prompt">Signature verified. Ready to install %1$s.</string>
+    <string name="setting_import_desc">Restore your data from an encrypted backup.</string>
+    <string name="action_search">Search</string>
+    <string name="chat_search_hint">// find in this chat...</string>
+    <string name="chat_search_prev">Previous match</string>
+    <string name="chat_search_next">Next match</string>
+    <string name="action_new">New</string>
+    <string name="group_add_to_contacts">Add to contacts</string>
+    <string name="toast_added_to_contacts">%1$s added to contacts</string>
+    <string name="section_requests">◆ REQUESTS</string>
+    <string name="request_accept">Accept</string>
+    <string name="request_block">Block</string>
+    <string name="group_invite_preview">%1$d members · invited by %2$s…</string>
+    <string name="request_unverified_prefix">⚠ Unverified · %1$s</string>
+    <string name="unverified_indicator">⚠ Unverified identity: check the safety number</string>
+    <string name="delivery_failed">Failed to send</string>
+    <string name="delivery_relayed">Sent via relay</string>
+    <string name="group_photo">Group photo</string>
+    <string name="group_photo_admin_only">Only a group admin can change the group photo</string>
+    <string name="group_photo_remove">Remove group photo</string>
+    <string name="group_photo_remove_confirm">Remove this group\'s photo for everyone?</string>
+    <string name="section_groups">◆ GROUPS</string>
+    <string name="section_contacts">◆ CONTACTS</string>
+    <string name="nav_contacts_title">◆ ALL CONTACTS</string>
+    <string name="groups_empty">// no groups yet, tap + to create</string>
+    <string name="contacts_empty">// no contacts yet, tap + to add</string>
+    <string name="new_message_title">New message</string>
+    <string name="tab_enter_code">Enter code</string>
+    <string name="tab_scan_qr">Scan QR</string>
+    <string name="scan_panel_hint">Scan a contact\'s QR code from their My code screen.</string>
+    <string name="action_show_my_code">Show my code</string>
+    <string name="create_group_title">New group</string>
+    <string name="hint_group_name">Group name</string>
+    <string name="create_group_pick">ADD MEMBERS</string>
+    <string name="action_create_group">Create group</string>
+    <string name="create_group_no_contacts">Add some contacts first.</string>
+    <string name="create_group_need_name">Enter a group name</string>
+    <string name="create_group_need_members">Select at least one member</string>
+    <string name="create_group_done">Group created</string>
+    <string name="create_group_creating">Creating…</string>
+    <string name="setting_screenshots">Allow screenshots</string>
+    <string name="setting_screenshots_desc">When off, screenshots and screen recording are blocked inside the app.</string>
+    <string name="setting_phone_keyboard">Use the phone\'s keyboard</string>
+    <string name="setting_phone_keyboard_desc">Needed to type Chinese, Japanese, Korean or Thai. The phone\'s keyboard can see what you type; NiiX asks it not to learn from it, but can\'t make it.</string>
+    <string name="setting_nostr">Offline delivery via Nostr</string>
+    <string name="setting_nostr_desc">When someone is offline, their messages wait on public Nostr relays until they come back. Relays only ever see encrypted data under a changing label, reached over Tor.</string>
+    <string name="setting_nostr_relays">Nostr inbox relays</string>
+    <string name="setting_nostr_relays_desc">Where your contacts leave messages for you while you are offline. Your contacts are told when this changes.</string>
+    <string name="nostr_relays_hint">One relay per line, e.g. wss://relay.example.com</string>
+    <string name="nostr_relays_explanation">Every relay is reached through Tor, so relays never see your IP address. Use wss:// addresses, or ws:// for .onion relays. Up to six. Changes are sent to contacts the next time each is reachable; until then they may still leave messages on the old relays.</string>
+    <string name="nostr_relays_reset">Defaults</string>
+    <string name="toast_nostr_relays_saved">%1$d relay(s) saved</string>
+    <string name="toast_nostr_relays_none">No valid relays: offline delivery to you is paused</string>
+    <string name="setting_cover_traffic">Cover traffic</string>
+    <string name="setting_cover_traffic_desc">Send decoy messages so an observer cannot tell when you are really chatting. Uses a little extra battery and data.</string>
+    <string name="attach">Attach</string>
+    <string name="attach_camera">Camera</string>
+    <string name="attach_photo">Photo</string>
+    <string name="attach_video">Video</string>
+    <string name="attach_audio">Record audio</string>
+    <string name="attach_file">File</string>
+    <string name="attach_choose">Attach</string>
+    <string name="audio_recording">Recording... tap to stop and send</string>
+    <string name="audio_stop_send">Stop &amp; send</string>
+    <string name="audio_cancel">Cancel</string>
+    <string name="attachment_save_title">Save file</string>
+    <string name="attachment_save_warning">%1$s will be decrypted and saved to your Downloads folder.\n\nOnce saved it is an ordinary file: other apps can read it, it is not covered by the duress wipe, and it stays on the device if NiiX is removed.</string>
+    <string name="attachment_save_confirm">Save</string>
+    <string name="attachment_saved">Saved %1$s to Downloads</string>
+    <string name="attachment_save_failed">Could not save the file</string>
+    <string name="attachment_download_failed">Attachment not available yet</string>
+    <string name="perm_mic_needed">Microphone permission is needed to record audio</string>
+    <string name="attachment_tap_open">tap to open</string>
+    <string name="settings_cat_profile">Profile</string>
+    <string name="settings_cat_profile_desc">Your name, photo and share code</string>
+    <string name="settings_cat_privacy">Privacy</string>
+    <string name="settings_cat_privacy_desc">Blur, screenshots, keyboard, cover traffic, who can reach you</string>
+    <string name="settings_cat_security">Security</string>
+    <string name="settings_cat_security_desc">Passcode, locking, duress, wipe</string>
+    <string name="settings_cat_backup">Backup</string>
+    <string name="settings_cat_backup_desc">Export and restore an encrypted copy</string>
+    <string name="settings_cat_updates">Updates</string>
+    <string name="settings_cat_updates_desc">How NiiX checks for and installs new versions</string>
+    <string name="settings_cat_about">About</string>
+    <string name="settings_cat_about_desc">Diagnostics, feedback, donation, version</string>
+    <string name="setting_profile_photo_desc">Shown to your contacts. Location and other metadata are removed automatically.</string>
+    <string name="toast_profile_updated">Profile updated</string>
+    <string name="menu_group_info">Group info</string>
+    <string name="group_info_title">Group info</string>
+    <string name="group_members">MEMBERS</string>
+    <string name="group_add_members">Add members</string>
+    <string name="group_promote">Promote to admin</string>
+    <string name="group_remove">Remove from group</string>
+    <string name="group_not_admin">Only group admins can do that</string>
+    <string name="group_no_candidates">No more contacts to add</string>
+    <string name="group_leave">Leave group</string>
+    <string name="group_leave_desc">Remove this group and its messages from this device</string>
+    <string name="leave_group_title">Leave group?</string>
+    <string name="leave_group_message">You\'ll stop receiving messages from this group, and it will be removed from this device. Other members keep their copy.</string>
+    <string name="leave_group_confirm">Leave</string>
+    <string name="toast_left_group">Left the group</string>
+    <string name="perm_camera_needed">Camera permission is needed to take a photo</string>
+    <string name="keyboard_space">space</string>
+    <string name="action_paste">Paste</string>
+    <string name="crop_title">Crop photo</string>
+    <string name="crop_load_failed">Couldn\'t load that image</string>
+    <string name="action_use_photo">Use photo</string>
+    <string name="action_delete">Delete</string>
+    <string name="delete_conversation_title">Delete conversation?</string>
+    <string name="delete_conversation_message">This removes the conversation and its messages from this device. %1$s stays in your contacts, and you can message them again anytime.</string>
+    <string name="delete_conversation_group_message">This removes the group and its messages from this device. Your contacts are not affected.</string>
+    <string name="passcode_prompt">Enter your passcode</string>
+    <string name="passcode_placeholder" translatable="false">–</string>
+    <string name="passcode_too_short">Enter at least 6 digits</string>
+    <string name="passcode_throttled">Too many attempts. Try again in %1$s.</string>
+    <string name="duration_seconds">%1$ds</string>
+    <string name="duration_minutes">%1$dm</string>
+    <string name="setting_require_passcode">Require a passcode</string>
+    <string name="setting_require_passcode_desc">Without this, anyone who can unlock your phone can open NiiX directly.</string>
+    <string name="setting_wipe_now">Wipe all data now</string>
+    <string name="setting_wipe_now_desc">Immediately and permanently erases everything on this device.</string>
+    <string name="warn_disable_passcode_title">Turn off passcode protection?</string>
+    <string name="warn_disable_passcode_body">Without a passcode, anyone who can unlock your phone (with a fingerprint, face or screen lock) can open NiiX directly and read your messages. Your data stays encrypted, but only as strongly as your phone\'s own lock screen, not by anything only you know.\n\nYour duress code will stop working, since there\'s no passcode screen left to enter it into. You can wipe your data manually from Settings instead.</string>
+    <string name="warn_disable_passcode_confirm">Turn Off Passcode</string>
+    <string name="wipe_now_title">Wipe all data now?</string>
+    <string name="wipe_now_body">This immediately and permanently deletes all messages, contacts, and keys on this device. This cannot be undone.</string>
+    <string name="wipe_now_confirm">Wipe Everything</string>
+    <string name="wipe_now_done">All data wiped.</string>
+    <string name="toast_passcode_disabled">Passcode turned off</string>
+    <string name="toast_passcode_enabled">Passcode turned on</string>
+    <string name="toast_change_failed">Couldn\'t change this setting. Nothing was changed, try again.</string>
+    <string name="hint_new_passcode">New passcode (6+ digits)</string>
+    <string name="enable_passcode_title">Set a passcode</string>
+    <string name="error_unknown">Unknown error</string>
+    <string name="update_no_changelog">(no changelog provided)</string>
+    <string name="update_err_unreachable">Could not reach the update server</string>
+    <string name="update_err_unreachable_tor">Could not reach the update server over Tor</string>
+    <string name="update_err_bad_response">Unexpected response from the update server</string>
+    <string name="update_err_no_apk">The release has no app file</string>
+    <string name="update_err_unsigned">The release isn\'t signed, so it isn\'t offered</string>
+    <string name="update_err_download">Could not download the update</string>
+    <string name="update_err_cancelled">Download cancelled</string>
+    <string name="update_err_signature">Signature verification failed. The update was rejected and deleted.</string>
+    <string name="update_err_save">The update didn\'t save correctly. Nothing was installed; please try again.</string>
+    <string name="install_err_missing">The downloaded update is missing or empty.</string>
+    <string name="install_err_start">Couldn\'t start the installation: %1$s</string>
+    <string name="install_cancelled">Installation was cancelled.</string>
+    <string name="install_blocked">Android blocked the installation%1$s. On some phones you need to allow this app to install unknown apps, in Settings › Apps › Special access.</string>
+    <string name="install_conflict">This update conflicts with the installed version%1$s. That usually means it was signed with a different key than the app on this device, which Android never accepts as an update. Export a backup from Settings first, then uninstall and install fresh; after that, updates will work.</string>
+    <string name="install_incompatible">This update isn\'t compatible with this device%1$s.</string>
+    <string name="install_invalid">Android rejected the update file as invalid%1$s. If the version number isn\'t higher than the installed one, that\'s the usual cause.</string>
+    <string name="install_storage">Not enough free storage to install the update%1$s.</string>
+    <string name="install_failed">Installation failed (code %1$d)%2$s.</string>
+    <!-- What the duress decoy is filled with: first names and everyday messages. Written to sound
+         natural in each language rather than translated word for word. -->
+        <string name="onboarding_link">Link to an existing account</string>
+    <string name="link_title">Link this device</string>
+    <string name="link_waiting_network">Connecting to Tor…</string>
+    <string name="link_waiting_scan">Ready. Scan this code from your other device.</string>
+    <string name="link_instructions">On a device that already has your account, open Settings › Security › Linked devices, tap \"Link a new device\" and scan this code. Your contacts and groups are copied over; message history stays where it is.</string>
+    <string name="link_done">Linked. Your contacts and groups are here.</string>
+    <string name="setting_devices">Linked devices</string>
+    <string name="setting_devices_desc">Use this account on more than one device</string>
+    <string name="devices_explain">Each device has its own address and keys, and gets every message. Removing a device erases it and stops contacts sending to it. A wipe on any device, including the duress passcode, wipes them all.</string>
+    <string name="devices_this">This device</string>
+    <string name="devices_other">Device %1$d</string>
+    <string name="devices_link_new">Link a new device</string>
+    <string name="devices_remove">Remove</string>
+    <string name="devices_remove_title">Remove this device?</string>
+    <string name="devices_remove_body">It will be told to erase everything, and your contacts stop sending to it. If it was lost or taken, it still holds what it had already received.</string>
+    <string name="devices_removed">Device removed</string>
+    <string name="devices_linking">Linking…</string>
+    <string name="devices_linked">Device linked</string>
+    <string name="devices_not_link_code">That isn\'t a link code. Scan the code shown on the new device.</string>
+    <string name="devices_too_many">This account is already on %1$d devices</string>
+    <string name="devices_unreachable">Couldn\'t reach the new device. Keep its code on screen and try again.</string>
+    <string name="scan_link_prompt">Scan the code on the new device</string>
+    <string name="devices_join">Link this device to another account</string>
+
+    <string-array name="decoy_names">
+        <item>Alex</item>
+        <item>Sam</item>
+        <item>Jordan</item>
+        <item>Mum</item>
+        <item>Dad</item>
+        <item>Chris</item>
+        <item>Taylor</item>
+        <item>Jamie</item>
+        <item>Robin</item>
+        <item>Morgan</item>
+    </string-array>
+    <string-array name="decoy_messages">
+        <item>Hey, are we still on for Saturday?</item>
+        <item>Thanks for the recipe, it turned out great!</item>
+        <item>Can you send me that photo from the trip?</item>
+        <item>Running a bit late, be there in 10.</item>
+        <item>Happy birthday! Hope you have a great day.</item>
+        <item>Did you finish watching that show yet?</item>
+        <item>Let\'s grab coffee sometime this week.</item>
+        <item>Thanks again for helping me move.</item>
+        <item>Sounds good, see you then.</item>
+        <item>No worries, talk soon.</item>
+        <item>Can you pick up milk on your way home?</item>
+        <item>That\'s hilarious.</item>
+        <item>Sure, I\'ll check and let you know.</item>
+        <item>Sorry for the late reply, been busy.</item>
+        <item>Sounds like a plan.</item>
+        <item>Call me when you get a chance?</item>
+    </string-array>
+    <string name="setting_blocked">Blocked</string>
+    <string name="setting_blocked_desc">People whose messages are dropped</string>
+    <string name="blocked_explain">Messages from these people are dropped without them being told. Tap someone to unblock them.</string>
+    <string name="blocked_empty">Nobody is blocked</string>
+    <string name="blocked_unblock_title">Unblock?</string>
+    <string name="blocked_unblock_body">Their messages will arrive again. Anything they sent while blocked is gone.</string>
+    <string name="menu_unblock">Unblock contact</string>
+    <string name="toast_unblocked">Unblocked</string>
+    <string name="action_send_again">Send again</string>
+    <string name="devices_link_confirm_title">Link this device?</string>
+    <string name="devices_link_confirm_body">The other phone gets this account\'s key, your contacts and groups, and every message from now on. Only link a phone you own and control.</string>
+    <string name="devices_link_confirm">Link</string>
+    <string name="feedback_url" translatable="false">https://github.com/techniixdotcom/niix-messenger/issues</string>
+    <string name="contact_profile_title">Contact</string>
+    <string name="contact_profile_message">Send message</string>
+    <string name="contact_profile_verified">Verified. You\'ve compared safety numbers.</string>
+    <string name="contact_profile_unverified">Not verified. Compare safety numbers to be sure it\'s them.</string>
+    <string name="setting_inactivity_wipe">Wipe if not used</string>
+    <string name="inactivity_wipe_off">Off. Erases this device if NiiX goes unused for a set time.</string>
+    <string name="inactivity_wipe_note">Erases this device if NiiX hasn\'t been unlocked or used for this long, even with no network. It happens the next time NiiX opens or runs after the time is up. Your other linked devices aren\'t erased. Someone who sets the phone\'s clock back before then can delay it.</string>
+    <string name="stopped_notice_title">Messages may have been delayed</string>
+    <string name="stopped_notice_body">Android stopped NiiX in the background for about %1$s, so messages sent to you waited until now. Letting NiiX run without battery restrictions prevents this. On Samsung phones, also check that NiiX isn\'t listed under Sleeping apps or Deep sleeping apps.</string>
+    <string name="stopped_notice_settings">Battery settings</string>
+    <string name="stopped_notice_dismiss">Not now</string>
+    <string name="setting_announce_online">Tell contacts when I\'m back online</string>
+    <string name="setting_announce_online_desc">After you reconnect, your contacts get a tiny message so their phones send what was waiting for you straight away. Off by default: it lets them know when you come online.</string>
+    <string name="install_samsung_auto_blocker">On Samsung phones this is usually Auto Blocker, which only allows apps from the Galaxy Store and Play Store. Turn it off in Settings › Security and privacy › Auto Blocker, update, then turn it back on if you like.</string>
+    <plurals name="inactivity_wipe_after">
+        <item quantity="one">After %1$d day without use</item>
+        <item quantity="other">After %1$d days without use</item>
+    </plurals>
+    <plurals name="inactivity_wipe_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="duration_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="duration_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <string name="timer_limits_note">Messages are deleted from both phones when the time runs out. This can\'t stop the other person taking a screenshot, photographing the screen or copying the text before then.</string>
+    <string name="group_remove_confirm">Remove %1$s from the group? They stop getting its messages, and the group\'s keys are changed so they can\'t read anything sent after this.</string>
+</resources>

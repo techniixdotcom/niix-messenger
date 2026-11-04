@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Black field with a faint line, turning pink while it has focus, as the site's inputs do. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/niix_bg" />
+            <corners android:radius="12dp" />
+            <stroke android:width="1dp" android:color="@color/niix_edge_strong" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/niix_bg" />
+            <corners android:radius="12dp" />
+            <stroke android:width="1dp" android:color="@color/niix_line" />
+        </shape>
+    </item>
+</selector>

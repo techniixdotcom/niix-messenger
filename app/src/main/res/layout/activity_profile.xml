@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:background="@color/niix_bg">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/niix_bg"
+        app:navigationIcon="@android:drawable/ic_menu_revert"
+        app:title="@string/settings_cat_profile"
+        app:titleTextColor="@color/niix_on_surface" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingBottom="28dp">
+
+            <TextView
+                android:id="@+id/profile_avatar"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/avatar_square"
+                android:gravity="center"
+                android:textColor="@color/niix_pink"
+                android:textSize="64sp"
+                android:textStyle="bold"
+                android:contentDescription="@string/profile_photo" />
+
+            <TextView
+                android:id="@+id/profile_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/niix_on_surface"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/profile_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:paddingHorizontal="24dp"
+                android:gravity="center"
+                android:fontFamily="@font/jetbrains_mono"
+                android:textIsSelectable="true"
+                android:textColor="@color/niix_on_surface_muted"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/profile_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/niix_on_surface_muted"
+                android:textSize="12sp" />
+
+            <Space android:layout_width="match_parent" android:layout_height="24dp" />
+
+            <com.google.android.material.card.MaterialCardView android:id="@+id/contact_card" style="@style/SettingsCard"
+                android:visibility="gone">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <TextView android:id="@+id/row_message" style="@style/SettingsRowTitle"
+                        android:layout_width="match_parent"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp"
+                        android:text="@string/contact_profile_message" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <!-- Rename for a contact, Add to contacts for a group member who isn't one. -->
+                    <TextView android:id="@+id/row_rename" style="@style/SettingsRowTitle"
+                        android:layout_width="match_parent"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:id="@+id/row_safety" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/action_safety_number" />
+                            <TextView android:id="@+id/contact_safety_desc" style="@style/SettingsRowDesc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/action_safety_number" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <TextView android:id="@+id/row_mute" style="@style/SettingsRowTitle"
+                        android:layout_width="match_parent"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <TextView android:id="@+id/row_block" style="@style/SettingsRowTitle"
+                        android:layout_width="match_parent"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp"
+                        android:textColor="@color/niix_danger" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- What a group admin can do about this member, when opened from group info. -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/group_card" style="@style/SettingsCard"
+                android:layout_marginTop="14dp" android:visibility="gone">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <LinearLayout android:id="@+id/row_group_promote" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical">
+                        <TextView style="@style/SettingsRowTitle"
+                            android:layout_width="match_parent"
+                            android:background="?attr/selectableItemBackground" android:padding="16dp"
+                            android:text="@string/group_promote" />
+                        <View android:layout_width="match_parent" android:layout_height="1dp"
+                            android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+                    </LinearLayout>
+
+                    <TextView android:id="@+id/row_group_remove" style="@style/SettingsRowTitle"
+                        android:layout_width="match_parent"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp"
+                        android:textColor="@color/niix_danger"
+                        android:text="@string/group_remove" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView android:id="@+id/self_card" style="@style/SettingsCard">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <LinearLayout android:id="@+id/row_name" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/profile_change_name" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/profile_name_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/profile_change_name" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+
+                    <LinearLayout android:id="@+id/row_photo" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:background="?attr/selectableItemBackground" android:padding="16dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView style="@style/SettingsRowTitle" android:text="@string/profile_change_photo" />
+                            <TextView style="@style/SettingsRowDesc" android:text="@string/setting_profile_photo_desc" />
+                        </LinearLayout>
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right" android:contentDescription="@string/profile_change_photo" />
+                    </LinearLayout>
+
+                    <LinearLayout android:id="@+id/row_remove_photo" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:visibility="gone">
+                        <View android:layout_width="match_parent" android:layout_height="1dp"
+                            android:layout_marginStart="16dp" android:background="@color/niix_divider" />
+                        <TextView style="@style/SettingsRowTitle"
+                            android:layout_width="match_parent"
+                            android:background="?attr/selectableItemBackground" android:padding="16dp"
+                            android:textColor="@color/niix_danger"
+                            android:text="@string/profile_remove_photo" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView android:id="@+id/code_card" style="@style/SettingsCard"
+                android:layout_marginTop="14dp">
+                <LinearLayout android:id="@+id/row_code" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground" android:padding="16dp">
+                    <ImageView
+                        android:id="@+id/profile_qr"
+                        android:layout_width="84dp"
+                        android:layout_height="84dp"
+                        android:background="#FFFFFF"
+                        android:padding="6dp"
+                        android:scaleType="fitCenter"
+                        android:contentDescription="@string/profile_my_code" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                        android:layout_marginStart="16dp" android:orientation="vertical">
+                        <TextView style="@style/SettingsRowTitle" android:text="@string/profile_my_code" />
+                        <TextView android:id="@+id/profile_code_desc" style="@style/SettingsRowDesc" android:text="@string/share_code_pending" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                        android:src="@drawable/ic_chevron_right" android:contentDescription="@string/profile_my_code" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
