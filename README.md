@@ -1,7 +1,6 @@
 <h1 align="center">
   <img src="docs/images/icon.png" height="72" alt="" />
   <img src="docs/images/title.svg" height="72" alt="NiiX" />
-  <img src="docs/images/icon.png" height="72" alt="" />
 </h1>
 
 A private messenger for Android that runs entirely over Tor. No phone number, no email, no
