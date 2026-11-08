@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One button. Its options open in the same glass dialog as Attach, rather than the system's
+     popup menu, so every list in a chat looks the same. See ChatActivity.showChatMenu. -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_more"
+        android:icon="@drawable/ic_more_vert"
+        android:title="@string/menu_more"
+        app:showAsAction="always" />
+</menu>

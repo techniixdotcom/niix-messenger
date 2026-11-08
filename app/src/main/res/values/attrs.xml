@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Every colour the app draws with. Each theme in themes.xml gives them values, so changing
+         the theme changes everything at once; nothing refers to a fixed colour. -->
+    <attr name="niixBg" format="color" />
+    <attr name="niixSurface" format="color" />
+    <attr name="niixSurfaceVariant" format="color" />
+    <attr name="niixSurfaceRaised" format="color" />
+    <attr name="niixOnSurface" format="color" />
+    <attr name="niixOnSurfaceMuted" format="color" />
+    <attr name="niixOnSurfaceFaint" format="color" />
+    <attr name="niixPrimary" format="color" />
+    <attr name="niixOnPrimary" format="color" />
+    <attr name="niixAccentLight" format="color" />
+    <attr name="niixEdge" format="color" />
+    <attr name="niixEdgeStrong" format="color" />
+    <attr name="niixSelected" format="color" />
+    <attr name="niixDivider" format="color" />
+    <attr name="niixLine" format="color" />
+    <attr name="niixBubbleOut" format="color" />
+    <attr name="niixBubbleIn" format="color" />
+    <attr name="niixMessageOutText" format="color" />
+    <attr name="niixDanger" format="color" />
+    <attr name="niixKey" format="color" />
+    <attr name="niixKeyAlt" format="color" />
+    <attr name="niixSearchHighlight" format="color" />
+    <!-- See-through surface for dialogs, menus and sheets, as in TestTube's NiiX theme. -->
+    <attr name="niixGlass" format="color" />
+</resources>
