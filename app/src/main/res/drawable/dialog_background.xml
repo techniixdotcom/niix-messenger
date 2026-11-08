@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dialogs: see-through glass with the edge in the theme colour. MaterialAlertDialogBuilder insets
+     this from the screen edges itself, so it is a plain shape. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="?attr/niixGlass" />
+    <stroke android:width="1dp" android:color="?attr/niixEdge" />
+    <corners android:radius="16dp" />
+</shape>

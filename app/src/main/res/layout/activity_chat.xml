@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/niixBg">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/niixBg"
+        app:navigationIcon="@android:drawable/ic_menu_revert"
+        app:titleTextColor="?attr/niixOnSurface" />
+
+    <LinearLayout
+        android:id="@+id/search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        android:background="?attr/niixSurface"
+        android:padding="8dp">
+
+        <EditText
+            android:id="@+id/search_field"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/input_bg"
+            android:hint="@string/chat_search_hint"
+            android:textColorHint="?attr/niixOnSurfaceMuted"
+            android:textColor="?attr/niixOnSurface"
+            android:textSize="14sp"
+            android:fontFamily="@font/jetbrains_mono"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp"
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionSearch" />
+
+        <TextView
+            android:id="@+id/search_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:textColor="?attr/niixOnSurfaceMuted"
+            android:textSize="12sp"
+            android:fontFamily="@font/jetbrains_mono"
+            android:text="0/0" />
+
+        <ImageButton
+            android:id="@+id/search_prev"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/arrow_up_float"
+            app:tint="?attr/niixOnSurface"
+            android:contentDescription="@string/chat_search_prev" />
+
+        <ImageButton
+            android:id="@+id/search_next"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/arrow_down_float"
+            app:tint="?attr/niixOnSurface"
+            android:contentDescription="@string/chat_search_next" />
+
+        <ImageButton
+            android:id="@+id/search_close"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="?attr/niixOnSurface"
+            android:contentDescription="@string/dialog_close" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Pull down at the top to retry sending and check for messages. -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/chat_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/message_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingHorizontal="6dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- Shown by holding the send button: a call, in the same circle as send, just above it.
+             Floats over the messages so showing it doesn't move anything. -->
+        <ImageButton
+            android:id="@+id/call_quick"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/avatar_circle"
+            android:backgroundTint="?attr/niixPrimary"
+            android:contentDescription="@string/menu_voice_call"
+            android:elevation="6dp"
+            android:src="@drawable/ic_call"
+            android:visibility="gone"
+            app:tint="?attr/niixOnPrimary" />
+    </FrameLayout>
+
+    <!-- Reply banner, right above the input so you can see what you're replying to while typing.
+         Has its own dismiss button. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp">
+
+        <TextView
+            android:id="@+id/reply_banner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:paddingVertical="6dp"
+            android:textColor="?attr/niixOnSurfaceMuted"
+            android:textSize="12sp" />
+
+        <ImageButton
+            android:id="@+id/reply_cancel"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:visibility="gone"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/dialog_cancel"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="?attr/niixOnSurfaceMuted" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
+
+        <ImageButton
+            android:id="@+id/attach"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/attach"
+            android:src="@android:drawable/ic_menu_add"
+            app:tint="?attr/niixPrimary" />
+
+        <EditText
+            android:id="@+id/input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/input_bg"
+            android:hint="@string/chat_hint"
+            android:textColorHint="?attr/niixOnSurfaceMuted"
+            android:textColor="?attr/niixOnSurface"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:maxLines="4"
+            android:inputType="textShortMessage|textMultiLine|textCapSentences" />
+
+        <ImageButton
+            android:id="@+id/send"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/avatar_circle"
+            android:backgroundTint="?attr/niixPrimary"
+            android:contentDescription="@string/chat_send"
+            android:src="@android:drawable/ic_menu_send"
+            app:tint="?attr/niixOnPrimary" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/keyboard_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="?attr/niixSurface"
+        android:paddingHorizontal="4dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="10dp" />
+</LinearLayout>
