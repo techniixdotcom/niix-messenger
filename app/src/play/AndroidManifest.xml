@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Merged over the main manifest for the Play build only. Google Play does not allow apps to
+     update themselves outside Play, so the updater's permission and its install-status receiver
+     are removed rather than merely unused: Play's review looks at what the manifest declares. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission
+        android:name="android.permission.REQUEST_INSTALL_PACKAGES"
+        tools:node="remove" />
+
+    <application>
+        <receiver
+            android:name="app.niix.update.UpdateInstallReceiver"
+            tools:node="remove" />
+    </application>
+</manifest>
