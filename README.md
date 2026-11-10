@@ -8,6 +8,8 @@ A private messenger for Android and Linux that runs entirely over Tor. No phone 
 no account, and no NiiX server: your device talks straight to the devices of the people you
 message, so nobody in the middle sees your messages or who you're talking to.
 
+
+
 - **End-to-end encrypted** with the Signal protocol, including a post-quantum key exchange, for
   messages, groups, photos, files and voice messages
 - **Voice calls, only if both of you allow them**, with verified contacts only. Off for everyone
@@ -28,16 +30,9 @@ message, so nobody in the middle sees your messages or who you're talking to.
 - **12 languages:** English, German, French, Spanish, Italian, Russian, Persian, Chinese, Arabic,
   Japanese, Thai and Korean
 
-Requires Android 10 or newer. Download the APK from
-[Releases](https://github.com/techniixdotcom/niix-messenger/releases); the app checks for updates
-itself after that.
 
-On Linux, download the `.flatpak` from the same release and install it with
-`flatpak install --user niix-messenger-<version>-x86_64.flatpak`. It needs Flatpak and the
-Flathub remote, which most distributions have set up already.
 
-How it works, how to build it, and the full documentation:
-[`docs/HOW-IT-WORKS.md`](docs/HOW-IT-WORKS.md).
+
 
 ## What it can't do
 
@@ -59,8 +54,12 @@ How it works, how to build it, and the full documentation:
 - **The inactivity wipe can't count time the phone spends switched off** with its clock wound
   back. Winding the clock back while it's on doesn't stop it.
 
+
+
 The full list, and what NiiX does protect against, is in
 [`docs/THREAT-MODEL.md`](docs/THREAT-MODEL.md).
+
+
 
 ## The Look
 
@@ -76,6 +75,9 @@ The full list, and what NiiX does protect against, is in
 <p align="center">
   <img src="screens/5.png"/>
 </p>
+
+
+
 
 ## Licence
 
