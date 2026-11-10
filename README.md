@@ -70,6 +70,10 @@ The full list, and what NiiX does protect against, is in
   <img src="screens/4.jpeg" width="200" alt="NiiX screenshot 4" />
 </p>
 
+<p align="center">
+  <img src="screens/pc.png" alt="NiiX screenshot 1" />
+</p>
+
 ## Theme Choices
 
 <p align="center">
