@@ -1,0 +1,61 @@
+# NiiX for Linux, built entirely from source without a network, as Flathub requires.
+#
+# This is a template: BUILD.sh --flathub-manifest fills in the release tag and its commit and
+# writes the result, with gradle-sources.json and flathub.json, to dist/flathub/ for the Flathub
+# repository. Every Maven artifact the build needs is listed, with its hash, in
+# gradle-sources.json (BUILD.sh --flathub-sources), and lands in desktop/offline-repository.
+id: app.niix.NiiX
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.openjdk25
+command: niix
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio
+  # The tray icon: offering it to the desktop's tray, where there is one.
+  - --talk-name=org.kde.StatusNotifierWatcher
+modules:
+  - name: openjdk
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/openjdk25/install.sh
+
+  - name: niix
+    buildsystem: simple
+    build-options:
+      env:
+        PATH: /app/bin:/usr/bin:/usr/lib/sdk/openjdk25/bin
+        JAVA_HOME: /usr/lib/sdk/openjdk25/jvm/openjdk-25
+        GRADLE_USER_HOME: /run/build/niix/.gradle-home
+    sources:
+      - type: git
+        url: @GIT_URL@
+        tag: @GIT_TAG@
+        commit: @GIT_COMMIT@
+      - type: archive
+        url: https://services.gradle.org/distributions/gradle-9.9.0-bin.zip
+        sha256: 0b00b0ffe07c4d4789c12d4935a44a7057d55774b7540bd4a3f76f336deb177a
+        dest: gradle-dist
+      - gradle-sources.json
+    build-commands:
+      - >-
+        cd desktop && ../gradle-dist/bin/gradle --offline --no-daemon --console=plain
+        -PniixOffline=true
+        -Porg.gradle.java.installations.auto-download=false
+        -Pkotlin.compiler.execution.strategy=in-process
+        installDist
+      - install -Dm755 desktop/flatpak/niix.sh /app/bin/niix
+      - install -d /app/share/niix/lib
+      - install -m644 desktop/build/install/niix/lib/*.jar /app/share/niix/lib/
+      - install -Dm644 desktop/flatpak/app.niix.NiiX.desktop /app/share/applications/app.niix.NiiX.desktop
+      - install -Dm644 desktop/flatpak/app.niix.NiiX.metainfo.xml /app/share/metainfo/app.niix.NiiX.metainfo.xml
+      - install -Dm644 desktop/src/main/resources/icons/app.niix.NiiX.svg /app/share/icons/hicolor/scalable/apps/app.niix.NiiX.svg
+      - install -Dm644 desktop/src/main/resources/icons/app.niix.NiiX-symbolic.svg /app/share/icons/hicolor/symbolic/apps/app.niix.NiiX-symbolic.svg
+      - install -Dm644 -t /app/share/fonts/jetbrains-mono app/src/main/res/font/*.ttf
+      - install -Dm644 licenses/JetBrainsMono-OFL.txt /app/share/licenses/app.niix.NiiX/JetBrainsMono-OFL.txt

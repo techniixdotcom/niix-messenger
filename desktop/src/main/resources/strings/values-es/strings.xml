@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">Vincular con mi teléfono</string>
+    <string name="desktop_link_explain">¿Ya usas NiiX en el teléfono? Vincula este ordenador: misma cuenta, mismos contactos. Elige antes un código si lo quieres; es solo de este ordenador.</string>
+    <string name="desktop_link_later">Usar este ordenador por separado</string>
+    <string name="desktop_unlock">Desbloquear</string>
+    <string name="desktop_lock_now">Bloquear ahora</string>
+    <string name="desktop_quit">Salir de NiiX</string>
+    <string name="desktop_pick_chat">Elige una conversación o empieza una con +.</string>
+    <string name="desktop_offline">Sin red</string>
+    <string name="desktop_connected">Conectado por Tor</string>
+    <string name="desktop_connection_failed">No se puede llegar a Tor. Reintentando…</string>
+    <string name="desktop_background_notice">NiiX sigue en marcha para que lleguen los mensajes. Ciérralo desde el menú.</string>
+    <string name="desktop_background_reason">Recibir mensajes con la ventana cerrada</string>
+    <string name="desktop_call_locked">Llamada entrante. Desbloquea NiiX para contestar.</string>
+    <string name="desktop_request_banner">Esta persona no está en tus contactos. Acepta para responder o bloquéala.</string>
+    <string name="desktop_open">Abrir</string>
+    <string name="desktop_save">Guardar una copia…</string>
+    <string name="desktop_open_failed">Ninguna aplicación pudo abrir este archivo</string>
+    <string name="desktop_file_too_large">Los archivos pueden ocupar hasta 100 MB</string>
+    <string name="desktop_recording_failed">No se pudo grabar. Comprueba que hay un micrófono conectado y permitido.</string>
+    <string name="desktop_read_qr_image">Leer un código QR de una imagen</string>
+    <string name="desktop_no_qr_found">No se encontró ningún código QR en esa imagen</string>
+    <string name="desktop_you">Tú</string>
+    <string name="desktop_network">Red</string>
+    <string name="desktop_key_storage">Almacén de claves</string>
+    <string name="desktop_key_storage_keyring">En el llavero del escritorio</string>
+    <string name="desktop_key_storage_file">En un archivo privado. No había llavero, así que quien pueda leer tus archivos puede abrir NiiX salvo que uses un código.</string>
+    <string name="desktop_devices_and_contacts">Dispositivos y contactos</string>
+    <string name="desktop_devices_link_desc">En el nuevo dispositivo, elige vincularlo y pega aquí el código que muestra, o escanéalo con el teléfono.</string>
+    <string name="desktop_section">Este ordenador</string>
+    <string name="desktop_autostart">Iniciar al acceder</string>
+    <string name="desktop_autostart_desc">Inicia NiiX en segundo plano al acceder, para recibir mensajes sin abrirlo.</string>
+    <string name="desktop_restoring">Restaurando la copia…</string>
+</resources>

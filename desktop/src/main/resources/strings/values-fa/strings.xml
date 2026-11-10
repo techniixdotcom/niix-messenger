@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">اتصال به تلفن من</string>
+    <string name="desktop_link_explain">از NiiX روی تلفن استفاده می‌کنید؟ این رایانه را به آن متصل کنید: همان حساب، همان مخاطبان. اگر رمز می‌خواهید اول آن را انتخاب کنید؛ فقط مخصوص این رایانه است.</string>
+    <string name="desktop_link_later">استفادهٔ جداگانه از این رایانه</string>
+    <string name="desktop_unlock">باز کردن قفل</string>
+    <string name="desktop_lock_now">اکنون قفل شود</string>
+    <string name="desktop_quit">خروج از NiiX</string>
+    <string name="desktop_pick_chat">یک گفتگو را انتخاب کنید یا با + یکی شروع کنید.</string>
+    <string name="desktop_offline">شبکه در دسترس نیست</string>
+    <string name="desktop_connected">متصل از طریق Tor</string>
+    <string name="desktop_connection_failed">دسترسی به Tor ممکن نیست. تلاش دوباره…</string>
+    <string name="desktop_background_notice">NiiX همچنان اجرا می‌شود تا پیام‌ها برسند. از منو خارج شوید.</string>
+    <string name="desktop_background_reason">دریافت پیام‌ها وقتی پنجره بسته است</string>
+    <string name="desktop_call_locked">تماس ورودی. برای پاسخ، قفل NiiX را باز کنید.</string>
+    <string name="desktop_request_banner">این شخص در مخاطبان شما نیست. برای پاسخ بپذیرید یا مسدودش کنید.</string>
+    <string name="desktop_open">باز کردن</string>
+    <string name="desktop_save">ذخیرهٔ یک نسخه…</string>
+    <string name="desktop_open_failed">هیچ برنامه‌ای نتوانست این پرونده را باز کند</string>
+    <string name="desktop_file_too_large">حجم پرونده‌ها تا ۱۰۰ مگابایت</string>
+    <string name="desktop_recording_failed">ضبط ممکن نشد. بررسی کنید میکروفون وصل و مجاز باشد.</string>
+    <string name="desktop_read_qr_image">خواندن کد QR از تصویر</string>
+    <string name="desktop_no_qr_found">در آن تصویر کد QR پیدا نشد</string>
+    <string name="desktop_you">شما</string>
+    <string name="desktop_network">شبکه</string>
+    <string name="desktop_key_storage">محل نگهداری کلیدها</string>
+    <string name="desktop_key_storage_keyring">در جاکلیدی میزکار</string>
+    <string name="desktop_key_storage_file">در یک پروندهٔ خصوصی. جاکلیدی در دسترس نبود، پس هر کس بتواند پرونده‌هایتان را بخواند می‌تواند NiiX را باز کند، مگر رمز بگذارید.</string>
+    <string name="desktop_devices_and_contacts">دستگاه‌ها و مخاطبان</string>
+    <string name="desktop_devices_link_desc">روی دستگاه جدید اتصال را انتخاب کنید، سپس کدی را که نشان می‌دهد اینجا بچسبانید یا با تلفن اسکن کنید.</string>
+    <string name="desktop_section">این رایانه</string>
+    <string name="desktop_autostart">اجرا هنگام ورود</string>
+    <string name="desktop_autostart_desc">NiiX را هنگام ورود در پس‌زمینه اجرا می‌کند تا پیام‌ها بدون باز کردن آن برسند.</string>
+    <string name="desktop_restoring">در حال بازیابی پشتیبان…</string>
+</resources>

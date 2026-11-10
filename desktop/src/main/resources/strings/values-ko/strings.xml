@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">내 휴대폰과 연결</string>
+    <string name="desktop_link_explain">휴대폰에서 NiiX를 쓰고 있나요? 이 컴퓨터를 연결하면 같은 계정과 연락처를 씁니다. 암호가 필요하면 먼저 정하세요. 이 컴퓨터 전용입니다.</string>
+    <string name="desktop_link_later">이 컴퓨터만 따로 사용</string>
+    <string name="desktop_unlock">잠금 해제</string>
+    <string name="desktop_lock_now">지금 잠그기</string>
+    <string name="desktop_quit">NiiX 종료</string>
+    <string name="desktop_pick_chat">대화를 고르거나 +로 새로 시작하세요.</string>
+    <string name="desktop_offline">네트워크 없음</string>
+    <string name="desktop_connected">Tor로 연결됨</string>
+    <string name="desktop_connection_failed">Tor에 연결할 수 없습니다. 다시 시도 중…</string>
+    <string name="desktop_background_notice">메시지를 받기 위해 NiiX가 계속 실행됩니다. 메뉴에서 종료하세요.</string>
+    <string name="desktop_background_reason">창을 닫아도 메시지 받기</string>
+    <string name="desktop_call_locked">전화가 오고 있습니다. 받으려면 NiiX 잠금을 해제하세요.</string>
+    <string name="desktop_request_banner">연락처에 없는 사람입니다. 답장하려면 수락하거나, 차단하세요.</string>
+    <string name="desktop_open">열기</string>
+    <string name="desktop_save">사본 저장…</string>
+    <string name="desktop_open_failed">이 파일을 열 수 있는 앱이 없습니다</string>
+    <string name="desktop_file_too_large">파일은 100MB까지 보낼 수 있습니다</string>
+    <string name="desktop_recording_failed">녹음할 수 없습니다. 마이크가 연결되고 허용되었는지 확인하세요.</string>
+    <string name="desktop_read_qr_image">사진에서 QR 코드 읽기</string>
+    <string name="desktop_no_qr_found">그 사진에서 QR 코드를 찾지 못했습니다</string>
+    <string name="desktop_you">나</string>
+    <string name="desktop_network">네트워크</string>
+    <string name="desktop_key_storage">키 보관</string>
+    <string name="desktop_key_storage_keyring">데스크톱 키링에 보관</string>
+    <string name="desktop_key_storage_file">개인 파일에 보관. 키링이 없어서, 암호를 쓰지 않으면 파일을 읽을 수 있는 사람은 누구나 NiiX를 열 수 있습니다.</string>
+    <string name="desktop_devices_and_contacts">기기와 연락처</string>
+    <string name="desktop_devices_link_desc">새 기기에서 연결을 선택한 뒤, 표시된 코드를 여기에 붙여 넣거나 휴대폰으로 스캔하세요.</string>
+    <string name="desktop_section">이 컴퓨터</string>
+    <string name="desktop_autostart">로그인할 때 시작</string>
+    <string name="desktop_autostart_desc">로그인할 때 NiiX를 백그라운드에서 시작해, 열지 않아도 메시지를 받습니다.</string>
+    <string name="desktop_restoring">백업 복원 중…</string>
+</resources>

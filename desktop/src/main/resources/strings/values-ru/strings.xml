@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">Связать с моим телефоном</string>
+    <string name="desktop_link_explain">Уже пользуетесь NiiX на телефоне? Свяжите с ним этот компьютер: тот же аккаунт, те же контакты. Если нужен код, задайте его сначала; он только для этого компьютера.</string>
+    <string name="desktop_link_later">Использовать этот компьютер отдельно</string>
+    <string name="desktop_unlock">Разблокировать</string>
+    <string name="desktop_lock_now">Заблокировать сейчас</string>
+    <string name="desktop_quit">Выйти из NiiX</string>
+    <string name="desktop_pick_chat">Выберите беседу или начните новую кнопкой +.</string>
+    <string name="desktop_offline">Нет сети</string>
+    <string name="desktop_connected">Подключено через Tor</string>
+    <string name="desktop_connection_failed">Tor недоступен. Пробуем снова…</string>
+    <string name="desktop_background_notice">NiiX продолжает работать, чтобы приходили сообщения. Закрыть его можно в меню.</string>
+    <string name="desktop_background_reason">Получать сообщения при закрытом окне</string>
+    <string name="desktop_call_locked">Входящий звонок. Разблокируйте NiiX, чтобы ответить.</string>
+    <string name="desktop_request_banner">Этого человека нет в ваших контактах. Примите, чтобы ответить, или заблокируйте.</string>
+    <string name="desktop_open">Открыть</string>
+    <string name="desktop_save">Сохранить копию…</string>
+    <string name="desktop_open_failed">Ни одно приложение не смогло открыть файл</string>
+    <string name="desktop_file_too_large">Файлы — до 100 МБ</string>
+    <string name="desktop_recording_failed">Не удалось записать. Проверьте, что микрофон подключён и разрешён.</string>
+    <string name="desktop_read_qr_image">Прочитать QR-код с картинки</string>
+    <string name="desktop_no_qr_found">На картинке нет QR-кода</string>
+    <string name="desktop_you">Вы</string>
+    <string name="desktop_network">Сеть</string>
+    <string name="desktop_key_storage">Хранение ключей</string>
+    <string name="desktop_key_storage_keyring">В связке ключей рабочего стола</string>
+    <string name="desktop_key_storage_file">В закрытом файле. Связки ключей не нашлось, поэтому любой, кто может читать ваши файлы, может открыть NiiX, если не задан код.</string>
+    <string name="desktop_devices_and_contacts">Устройства и контакты</string>
+    <string name="desktop_devices_link_desc">На новом устройстве выберите связывание, затем вставьте сюда показанный код или отсканируйте его телефоном.</string>
+    <string name="desktop_section">Этот компьютер</string>
+    <string name="desktop_autostart">Запускать при входе</string>
+    <string name="desktop_autostart_desc">Запускает NiiX в фоне при входе в систему, чтобы сообщения приходили без открытия окна.</string>
+    <string name="desktop_restoring">Восстановление резервной копии…</string>
+</resources>

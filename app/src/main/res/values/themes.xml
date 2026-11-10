@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The niixa look: dark glass with a thin edge in the theme's colour, that colour for what is
+         selected or on, and JetBrains Mono throughout. This base sets everything except the
+         colours, which come from attrs.xml; each theme below fills them in. DayNight, because the
+         Light theme runs the app in day mode and every other one in night mode (NiixTheme). -->
+    <style name="Theme.Niix" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">?attr/niixPrimary</item>
+        <item name="colorOnPrimary">?attr/niixOnPrimary</item>
+        <item name="colorPrimaryContainer">?attr/niixSelected</item>
+        <item name="colorOnPrimaryContainer">?attr/niixOnSurface</item>
+        <item name="colorSecondary">?attr/niixAccentLight</item>
+        <item name="colorOnSecondary">?attr/niixOnPrimary</item>
+        <item name="colorSecondaryContainer">?attr/niixSelected</item>
+        <item name="colorOnSecondaryContainer">?attr/niixOnSurface</item>
+        <item name="colorTertiary">?attr/niixAccentLight</item>
+        <item name="colorSurface">?attr/niixBg</item>
+        <item name="colorOnSurface">?attr/niixOnSurface</item>
+        <item name="colorSurfaceVariant">?attr/niixSurfaceRaised</item>
+        <item name="colorOnSurfaceVariant">?attr/niixOnSurfaceMuted</item>
+        <!-- Material3 draws menus, sheets, cards and switch tracks from these containers. All
+             glass, so nothing comes out in Material's default tinted grey. -->
+        <item name="colorSurfaceContainerLowest">?attr/niixBg</item>
+        <item name="colorSurfaceContainerLow">?attr/niixSurfaceVariant</item>
+        <item name="colorSurfaceContainer">?attr/niixSurface</item>
+        <item name="colorSurfaceContainerHigh">?attr/niixSurface</item>
+        <item name="colorSurfaceContainerHighest">?attr/niixSurfaceRaised</item>
+        <item name="colorOutline">?attr/niixOnSurfaceFaint</item>
+        <item name="colorOutlineVariant">?attr/niixLine</item>
+        <item name="android:colorBackground">?attr/niixBg</item>
+        <item name="colorError">?attr/niixDanger</item>
+        <item name="android:textColorHighlight">?attr/niixEdgeStrong</item>
+        <item name="android:statusBarColor">?attr/niixBg</item>
+        <item name="android:navigationBarColor">?attr/niixBg</item>
+        <item name="android:windowBackground">?attr/niixBg</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="fontFamily">@font/jetbrains_mono</item>
+
+        <!-- Material's type scale names its own typeface, so screen titles, buttons and dialog
+             titles ignored the font above and came out in the system sans-serif. Each role is
+             re-pointed at JetBrains Mono, keeping Material's sizes. -->
+        <item name="textAppearanceDisplayLarge">@style/TextAppearance.Niix.DisplayLarge</item>
+        <item name="textAppearanceDisplayMedium">@style/TextAppearance.Niix.DisplayMedium</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Niix.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Niix.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Niix.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Niix.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Niix.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Niix.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Niix.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Niix.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Niix.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Niix.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Niix.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Niix.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Niix.LabelSmall</item>
+
+        <!-- Every dialog is built with MaterialAlertDialogBuilder (through niixDialog), which
+             reads this overlay. AppCompat's dialog theme stays set for anything the platform
+             builds itself. -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Niix.MaterialAlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Niix.BottomSheetDialog</item>
+        <item name="android:alertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="alertDialogTheme">@style/Theme.Niix.Dialog</item>
+        <item name="popupMenuStyle">@style/Widget.Niix.PopupMenu</item>
+        <item name="android:popupMenuStyle">@style/Widget.Niix.PopupMenu</item>
+        <item name="materialButtonStyle">@style/Widget.Niix.Button</item>
+    </style>
+
+    <!-- The default button, as on niixa.org: an outline and text in the theme's colour. Filled
+         colour is kept for icons and the passcode keypad's go key, where contrast matters less
+         than for ordinary button labels. -->
+    <style name="Widget.Niix.Button" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">?attr/niixPrimary</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">?attr/niixPrimary</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="rippleColor">?attr/niixSelected</item>
+        <item name="cornerRadius">10dp</item>
+    </style>
+
+    <style name="TextAppearance.Niix.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.Niix.DisplayMedium" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.Niix.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.Niix.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.Niix.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.Niix.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.Niix.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.Niix.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.Niix.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.Niix.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+    </style>
+    <style name="TextAppearance.Niix.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+    </style>
+    <style name="TextAppearance.Niix.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+    </style>
+    <style name="TextAppearance.Niix.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+    <style name="TextAppearance.Niix.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+    <style name="TextAppearance.Niix.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+
+    <!-- Dialogs: glass with an edge in the theme's colour (the background comes from niixDialog),
+         JetBrains Mono, the theme's colour for the action that proceeds and muted for the one that backs out. Destructive
+         confirmations turn their button red with showDestructive. -->
+    <style name="Base.ThemeOverlay.Niix.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:backgroundDimAmount">0.6</item>
+        <item name="colorSurface">?attr/niixSurface</item>
+        <item name="colorSurfaceContainerHigh">?attr/niixSurface</item>
+        <item name="colorOnSurface">?attr/niixOnSurface</item>
+        <item name="colorOnSurfaceVariant">?attr/niixOnSurfaceMuted</item>
+        <item name="colorPrimary">?attr/niixPrimary</item>
+        <item name="android:textColorPrimary">?attr/niixOnSurface</item>
+        <item name="android:textColorSecondary">?attr/niixOnSurfaceMuted</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="fontFamily">@font/jetbrains_mono</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Niix.DialogButton.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Niix.DialogButton.Muted</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Niix.DialogButton.Muted</item>
+    </style>
+
+    <!-- Android 12 and later also blur the screen behind; see values-v31. -->
+    <style name="ThemeOverlay.Niix.MaterialAlertDialog" parent="Base.ThemeOverlay.Niix.MaterialAlertDialog" />
+
+    <!-- Bottom sheets: the same glass and dim as dialogs. -->
+    <style name="Base.ThemeOverlay.Niix.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:backgroundDimAmount">0.5</item>
+        <item name="bottomSheetStyle">@style/Widget.Niix.BottomSheet</item>
+    </style>
+
+    <style name="ThemeOverlay.Niix.BottomSheetDialog" parent="Base.ThemeOverlay.Niix.BottomSheetDialog" />
+
+    <style name="Widget.Niix.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">?attr/niixGlass</item>
+    </style>
+
+    <style name="Widget.Niix.DialogButton.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">?attr/niixPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Niix.DialogButton.Muted" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">?attr/niixOnSurfaceMuted</item>
+    </style>
+
+    <!-- Colours only, for dialogs the platform builds itself. It must not set alertDialogStyle
+         to a Material style: AppCompat inflates that expecting attributes a Material3 dialog style
+         does not define, which once crashed every dialog in the app. -->
+    <style name="Theme.Niix.Dialog" parent="Theme.Material3.DayNight.Dialog.Alert">
+        <item name="android:colorBackground">?attr/niixSurface</item>
+        <item name="colorSurface">?attr/niixSurface</item>
+        <item name="colorSurfaceContainerHigh">?attr/niixSurface</item>
+        <item name="colorOnSurface">?attr/niixOnSurface</item>
+        <item name="colorOnSurfaceVariant">?attr/niixOnSurfaceMuted</item>
+        <item name="android:textColorPrimary">?attr/niixOnSurface</item>
+        <item name="android:textColorSecondary">?attr/niixOnSurfaceMuted</item>
+        <item name="colorPrimary">?attr/niixPrimary</item>
+        <item name="android:fontFamily">@font/jetbrains_mono</item>
+        <item name="fontFamily">@font/jetbrains_mono</item>
+    </style>
+
+    <style name="Widget.Niix.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_background</item>
+    </style>
+
+
+    <!-- Pink, as on niixa.org. White on pink is 3.8:1, so pink is for outlines, text and icons; pink on black is 5.5:1. -->
+    <style name="Theme.Niix.Pink" parent="Theme.Niix">
+        <item name="niixBg">#000000</item>
+        <item name="niixSurface">#121218</item>
+        <item name="niixSurfaceVariant">#0B0B10</item>
+        <item name="niixSurfaceRaised">#1A1A22</item>
+        <item name="niixOnSurface">#F2F2F5</item>
+        <item name="niixOnSurfaceMuted">#A0A0AE</item>
+        <item name="niixOnSurfaceFaint">#7A7A88</item>
+        <item name="niixPrimary">#FF0A6C</item>
+        <item name="niixOnPrimary">#FFFFFF</item>
+        <item name="niixAccentLight">#FF4D94</item>
+        <item name="niixEdge">#59FF0A6C</item>
+        <item name="niixEdgeStrong">#99FF0A6C</item>
+        <item name="niixSelected">#29FF0A6C</item>
+        <item name="niixDivider">#12FFFFFF</item>
+        <item name="niixLine">#21FFFFFF</item>
+        <item name="niixBubbleOut">#29FF0A6C</item>
+        <item name="niixBubbleIn">#121218</item>
+        <item name="niixMessageOutText">#FFFFFF</item>
+        <item name="niixDanger">#FF453A</item>
+        <item name="niixKey">#121218</item>
+        <item name="niixKeyAlt">#1A1A22</item>
+        <item name="niixSearchHighlight">#4DFF0A6C</item>
+        <item name="niixGlass">#CC121218</item>
+    </style>
+
+    <!-- Green, the same as Session's. Bright enough that anything filled with it needs black text. -->
+    <style name="Theme.Niix.Green" parent="Theme.Niix">
+        <item name="niixBg">#000000</item>
+        <item name="niixSurface">#121218</item>
+        <item name="niixSurfaceVariant">#0B0B10</item>
+        <item name="niixSurfaceRaised">#1A1A22</item>
+        <item name="niixOnSurface">#F2F2F5</item>
+        <item name="niixOnSurfaceMuted">#A0A0AE</item>
+        <item name="niixOnSurfaceFaint">#7A7A88</item>
+        <item name="niixPrimary">#00F782</item>
+        <item name="niixOnPrimary">#000000</item>
+        <item name="niixAccentLight">#5CFFAE</item>
+        <item name="niixEdge">#5900F782</item>
+        <item name="niixEdgeStrong">#9900F782</item>
+        <item name="niixSelected">#2900F782</item>
+        <item name="niixDivider">#12FFFFFF</item>
+        <item name="niixLine">#21FFFFFF</item>
+        <item name="niixBubbleOut">#2900F782</item>
+        <item name="niixBubbleIn">#121218</item>
+        <item name="niixMessageOutText">#FFFFFF</item>
+        <item name="niixDanger">#FF453A</item>
+        <item name="niixKey">#121218</item>
+        <item name="niixKeyAlt">#1A1A22</item>
+        <item name="niixSearchHighlight">#4D00F782</item>
+        <item name="niixGlass">#CC121218</item>
+    </style>
+
+    <!-- Orange, with black text on anything filled with it, like green. -->
+    <style name="Theme.Niix.Orange" parent="Theme.Niix">
+        <item name="niixBg">#000000</item>
+        <item name="niixSurface">#121218</item>
+        <item name="niixSurfaceVariant">#0B0B10</item>
+        <item name="niixSurfaceRaised">#1A1A22</item>
+        <item name="niixOnSurface">#F2F2F5</item>
+        <item name="niixOnSurfaceMuted">#A0A0AE</item>
+        <item name="niixOnSurfaceFaint">#7A7A88</item>
+        <item name="niixPrimary">#FF8A00</item>
+        <item name="niixOnPrimary">#000000</item>
+        <item name="niixAccentLight">#FFAD4D</item>
+        <item name="niixEdge">#59FF8A00</item>
+        <item name="niixEdgeStrong">#99FF8A00</item>
+        <item name="niixSelected">#29FF8A00</item>
+        <item name="niixDivider">#12FFFFFF</item>
+        <item name="niixLine">#21FFFFFF</item>
+        <item name="niixBubbleOut">#29FF8A00</item>
+        <item name="niixBubbleIn">#121218</item>
+        <item name="niixMessageOutText">#FFFFFF</item>
+        <item name="niixDanger">#FF453A</item>
+        <item name="niixKey">#121218</item>
+        <item name="niixKeyAlt">#1A1A22</item>
+        <item name="niixSearchHighlight">#4DFF8A00</item>
+        <item name="niixGlass">#CC121218</item>
+    </style>
+
+    <!-- Royal blue. Darker than the others, so its edges and the wash behind selected things are
+         stronger, or they would barely show on black. -->
+    <style name="Theme.Niix.RoyalBlue" parent="Theme.Niix">
+        <item name="niixBg">#000000</item>
+        <item name="niixSurface">#121218</item>
+        <item name="niixSurfaceVariant">#0B0B10</item>
+        <item name="niixSurfaceRaised">#1A1A22</item>
+        <item name="niixOnSurface">#F2F2F5</item>
+        <item name="niixOnSurfaceMuted">#A0A0AE</item>
+        <item name="niixOnSurfaceFaint">#7A7A88</item>
+        <item name="niixPrimary">#4169E1</item>
+        <item name="niixOnPrimary">#FFFFFF</item>
+        <item name="niixAccentLight">#7B97EE</item>
+        <item name="niixEdge">#804169E1</item>
+        <item name="niixEdgeStrong">#CC4169E1</item>
+        <item name="niixSelected">#334169E1</item>
+        <item name="niixDivider">#12FFFFFF</item>
+        <item name="niixLine">#21FFFFFF</item>
+        <item name="niixBubbleOut">#334169E1</item>
+        <item name="niixBubbleIn">#121218</item>
+        <item name="niixMessageOutText">#FFFFFF</item>
+        <item name="niixDanger">#FF453A</item>
+        <item name="niixKey">#121218</item>
+        <item name="niixKeyAlt">#1A1A22</item>
+        <item name="niixSearchHighlight">#4D4169E1</item>
+        <item name="niixGlass">#CC121218</item>
+    </style>
+
+    <!-- Dark: white on black, with no colour at all. -->
+    <style name="Theme.Niix.Dark" parent="Theme.Niix">
+        <item name="niixBg">#000000</item>
+        <item name="niixSurface">#121218</item>
+        <item name="niixSurfaceVariant">#0B0B10</item>
+        <item name="niixSurfaceRaised">#1A1A22</item>
+        <item name="niixOnSurface">#F2F2F5</item>
+        <item name="niixOnSurfaceMuted">#A0A0AE</item>
+        <item name="niixOnSurfaceFaint">#7A7A88</item>
+        <item name="niixPrimary">#FFFFFF</item>
+        <item name="niixOnPrimary">#000000</item>
+        <item name="niixAccentLight">#D6D6DE</item>
+        <item name="niixEdge">#59FFFFFF</item>
+        <item name="niixEdgeStrong">#99FFFFFF</item>
+        <item name="niixSelected">#24FFFFFF</item>
+        <item name="niixDivider">#12FFFFFF</item>
+        <item name="niixLine">#21FFFFFF</item>
+        <item name="niixBubbleOut">#24FFFFFF</item>
+        <item name="niixBubbleIn">#121218</item>
+        <item name="niixMessageOutText">#FFFFFF</item>
+        <item name="niixDanger">#FF453A</item>
+        <item name="niixKey">#121218</item>
+        <item name="niixKeyAlt">#1A1A22</item>
+        <item name="niixSearchHighlight">#4DFFFFFF</item>
+        <item name="niixGlass">#CC121218</item>
+    </style>
+
+    <!-- Light: black on white. The only day-mode theme, so system bars get dark icons, and the
+         danger red is darkened to stay readable on white. -->
+    <style name="Theme.Niix.Light" parent="Theme.Niix">
+        <item name="niixBg">#FFFFFF</item>
+        <item name="niixSurface">#F4F4F6</item>
+        <item name="niixSurfaceVariant">#FAFAFB</item>
+        <item name="niixSurfaceRaised">#E9E9EE</item>
+        <item name="niixOnSurface">#0B0B10</item>
+        <item name="niixOnSurfaceMuted">#55555F</item>
+        <item name="niixOnSurfaceFaint">#6B6B75</item>
+        <item name="niixPrimary">#000000</item>
+        <item name="niixOnPrimary">#FFFFFF</item>
+        <item name="niixAccentLight">#33333B</item>
+        <item name="niixEdge">#40000000</item>
+        <item name="niixEdgeStrong">#80000000</item>
+        <item name="niixSelected">#14000000</item>
+        <item name="niixDivider">#14000000</item>
+        <item name="niixLine">#24000000</item>
+        <item name="niixBubbleOut">#14000000</item>
+        <item name="niixBubbleIn">#F4F4F6</item>
+        <item name="niixMessageOutText">#0B0B10</item>
+        <item name="niixDanger">#D70015</item>
+        <item name="niixKey">#F0F0F3</item>
+        <item name="niixKeyAlt">#E2E2E8</item>
+        <item name="niixSearchHighlight">#33000000</item>
+        <item name="niixGlass">#D9F4F4F6</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>
