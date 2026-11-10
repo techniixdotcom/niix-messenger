@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>app.niix.NiiX</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <name>NiiX</name>
+  <summary>Private messenger over Tor</summary>
+  <developer id="app.niix">
+    <name>NiiX</name>
+  </developer>
+  <description>
+    <p>
+      NiiX is a private messenger that runs entirely over Tor. It does not ask for a phone number,
+      an email address, or an account of any kind, and there is no server that sees your contacts,
+      your messages, or who you are talking to.
+    </p>
+    <p>
+      Your identity is a Tor onion address and a Signal protocol key pair, both made on your own
+      computer. Use it on its own, or link it to the NiiX app on your phone so both share one account.
+    </p>
+    <ul>
+      <li>Direct messages, groups, files and voice messages, end-to-end encrypted with the Signal protocol</li>
+      <li>Post-quantum session setup, so traffic recorded now can't be decrypted later</li>
+      <li>Messages go over Tor straight to the other person's onion address, with no server in between</li>
+      <li>Offline delivery through public Nostr relays, reached over Tor, as sealed envelopes they can't read</li>
+      <li>Disappearing messages, a duress passcode, and an optional wipe if NiiX goes unused</li>
+      <li>One account on up to five linked devices</li>
+      <li>Keys kept in your desktop keyring, the database encrypted with SQLCipher</li>
+    </ul>
+    <p>Voice calls, between two people who have both allowed them, work as on the phone app.</p>
+  </description>
+  <launchable type="desktop-id">app.niix.NiiX.desktop</launchable>
+  <url type="homepage">https://github.com/techniixdotcom/niix-messenger</url>
+  <url type="bugtracker">https://github.com/techniixdotcom/niix-messenger/issues</url>
+  <url type="vcs-browser">https://github.com/techniixdotcom/niix-messenger</url>
+  <categories>
+    <category>Network</category>
+    <category>InstantMessaging</category>
+    <category>Chat</category>
+  </categories>
+  <keywords>
+    <keyword>messenger</keyword>
+    <keyword>tor</keyword>
+    <keyword>signal</keyword>
+    <keyword>privacy</keyword>
+    <keyword>encrypted</keyword>
+  </keywords>
+  <branding>
+    <color type="primary" scheme_preference="light">#FF4D94</color>
+    <color type="primary" scheme_preference="dark">#FF0A6C</color>
+  </branding>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Chats</caption>
+      <image>https://raw.githubusercontent.com/techniixdotcom/niix-messenger/main/screens/1.jpeg</image>
+    </screenshot>
+    <screenshot>
+      <caption>A conversation</caption>
+      <image>https://raw.githubusercontent.com/techniixdotcom/niix-messenger/main/screens/2.jpeg</image>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-chat">intense</content_attribute>
+    <content_attribute id="social-audio">intense</content_attribute>
+  </content_rating>
+  <releases>
+    <release version="1.3.4" date="2026-11-10"/>
+    <release version="1.0.2" date="2026-11-09">
+      <description>
+        <p>First Linux release: messaging, groups, files and voice messages, as a linked device or on its own.</p>
+      </description>
+    </release>
+  </releases>
+</component>

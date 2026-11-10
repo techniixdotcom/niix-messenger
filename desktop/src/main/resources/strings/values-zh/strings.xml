@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">关联到我的手机</string>
+    <string name="desktop_link_explain">已在手机上使用 NiiX？将这台电脑关联到手机：同一账户，同样的联系人。如需密码请先设置，它仅用于这台电脑。</string>
+    <string name="desktop_link_later">单独使用这台电脑</string>
+    <string name="desktop_unlock">解锁</string>
+    <string name="desktop_lock_now">立即锁定</string>
+    <string name="desktop_quit">退出 NiiX</string>
+    <string name="desktop_pick_chat">选择一个对话，或用 + 开始新对话。</string>
+    <string name="desktop_offline">无网络</string>
+    <string name="desktop_connected">已通过 Tor 连接</string>
+    <string name="desktop_connection_failed">无法连接 Tor，正在重试…</string>
+    <string name="desktop_background_notice">NiiX 仍在运行以接收消息。可从菜单退出。</string>
+    <string name="desktop_background_reason">窗口关闭时接收消息</string>
+    <string name="desktop_call_locked">有来电。解锁 NiiX 以接听。</string>
+    <string name="desktop_request_banner">此人不在你的联系人中。接受后可回复，或将其屏蔽。</string>
+    <string name="desktop_open">打开</string>
+    <string name="desktop_save">另存副本…</string>
+    <string name="desktop_open_failed">没有应用能打开此文件</string>
+    <string name="desktop_file_too_large">文件最大 100 MB</string>
+    <string name="desktop_recording_failed">无法录音。请确认已连接麦克风并已授权。</string>
+    <string name="desktop_read_qr_image">从图片读取二维码</string>
+    <string name="desktop_no_qr_found">该图片中没有找到二维码</string>
+    <string name="desktop_you">你</string>
+    <string name="desktop_network">网络</string>
+    <string name="desktop_key_storage">密钥存储</string>
+    <string name="desktop_key_storage_keyring">在桌面密钥环中</string>
+    <string name="desktop_key_storage_file">在私有文件中。没有可用的密钥环，因此能读取你文件的人都能打开 NiiX，除非设置密码。</string>
+    <string name="desktop_devices_and_contacts">设备与联系人</string>
+    <string name="desktop_devices_link_desc">在新设备上选择关联，然后把它显示的代码粘贴到这里，或用手机扫描。</string>
+    <string name="desktop_section">这台电脑</string>
+    <string name="desktop_autostart">登录时启动</string>
+    <string name="desktop_autostart_desc">登录时在后台启动 NiiX，无需打开即可收到消息。</string>
+    <string name="desktop_restoring">正在恢复备份…</string>
+</resources>

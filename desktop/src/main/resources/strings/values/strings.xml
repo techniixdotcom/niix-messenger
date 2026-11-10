@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">Link to my phone</string>
+    <string name="desktop_link_explain">Already use NiiX on your phone? Link this computer to it: same account, same contacts. Choose a passcode first if you want one; it\'s this computer\'s own.</string>
+    <string name="desktop_link_later">Use this computer on its own</string>
+    <string name="desktop_unlock">Unlock</string>
+    <string name="desktop_lock_now">Lock now</string>
+    <string name="desktop_quit">Quit NiiX</string>
+    <string name="desktop_pick_chat">Pick a conversation, or start one with +.</string>
+    <string name="desktop_offline">No network</string>
+    <string name="desktop_connected">Connected over Tor</string>
+    <string name="desktop_connection_failed">Can\'t reach Tor. Trying again…</string>
+    <string name="desktop_background_notice">NiiX is still running so messages keep arriving. Quit it from the menu.</string>
+    <string name="desktop_background_reason">Receive messages while the window is closed</string>
+    <string name="desktop_call_locked">Incoming call. Unlock NiiX to answer.</string>
+    <string name="desktop_request_banner">This person isn\'t in your contacts. Accept to reply, or block them.</string>
+    <string name="desktop_open">Open</string>
+    <string name="desktop_save">Save a copy…</string>
+    <string name="desktop_open_failed">No app could open this file</string>
+    <string name="desktop_file_too_large">Files can be up to 100 MB</string>
+    <string name="desktop_recording_failed">Couldn\'t record. Check that a microphone is connected and allowed.</string>
+    <string name="desktop_read_qr_image">Read a QR code from a picture</string>
+    <string name="desktop_no_qr_found">No QR code found in that picture</string>
+    <string name="desktop_you">You</string>
+    <string name="desktop_network">Network</string>
+    <string name="desktop_key_storage">Key storage</string>
+    <string name="desktop_key_storage_keyring">In the desktop keyring</string>
+    <string name="desktop_key_storage_file">In a private file. No keyring was available, so anyone who can read your files can open NiiX unless you use a passcode.</string>
+    <string name="desktop_devices_and_contacts">Devices and contacts</string>
+    <string name="desktop_devices_link_desc">On the new device, choose to link it, then paste the code it shows here, or scan it with your phone.</string>
+    <string name="desktop_section">This computer</string>
+    <string name="desktop_autostart">Start at login</string>
+    <string name="desktop_autostart_desc">Starts NiiX in the background when you log in, so messages arrive without opening it.</string>
+    <string name="desktop_restoring">Restoring the backup…</string>
+</resources>

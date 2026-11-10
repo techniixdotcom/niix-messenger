@@ -1,0 +1,60 @@
+# NiiX for Linux, packaged from the app BUILD.sh has just built (desktop/build/install/niix).
+# BUILD.sh --target=flatpak builds that first, then this, then a .flatpak bundle from it.
+#
+# For Flathub, which builds everything from source without a network, see
+# app.niix.NiiX.flathub.yml.in.
+id: app.niix.NiiX
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.openjdk25
+command: niix
+finish-args:
+  # Tor, and nothing else: every connection NiiX makes goes through it.
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Recording and playing voice messages.
+  - --socket=pulseaudio
+  # No file system access: files are picked and saved through the file chooser portal, keys are
+  # kept through the Secret portal, notifications and starting at login go through portals too.
+modules:
+  - name: openjdk
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/openjdk25/install.sh
+
+  - name: niix
+    buildsystem: simple
+    sources:
+      - type: dir
+        path: ../build/install/niix
+        dest: dist
+      - type: file
+        path: niix.sh
+      - type: file
+        path: app.niix.NiiX.desktop
+      - type: file
+        path: app.niix.NiiX.metainfo.xml
+      - type: file
+        path: ../src/main/resources/icons/app.niix.NiiX.svg
+      - type: file
+        path: ../src/main/resources/icons/app.niix.NiiX-symbolic.svg
+      - type: dir
+        path: ../../app/src/main/res/font
+        dest: fonts
+      - type: file
+        path: ../../licenses/JetBrainsMono-OFL.txt
+    build-commands:
+      - install -Dm755 niix.sh /app/bin/niix
+      - install -d /app/share/niix/lib
+      - install -m644 dist/lib/*.jar /app/share/niix/lib/
+      - install -Dm644 app.niix.NiiX.desktop /app/share/applications/app.niix.NiiX.desktop
+      - install -Dm644 app.niix.NiiX.metainfo.xml /app/share/metainfo/app.niix.NiiX.metainfo.xml
+      - install -Dm644 app.niix.NiiX.svg /app/share/icons/hicolor/scalable/apps/app.niix.NiiX.svg
+      - install -Dm644 app.niix.NiiX-symbolic.svg /app/share/icons/hicolor/symbolic/apps/app.niix.NiiX-symbolic.svg
+      - install -Dm644 -t /app/share/fonts/jetbrains-mono fonts/*.ttf
+      - install -Dm644 JetBrainsMono-OFL.txt /app/share/licenses/app.niix.NiiX/JetBrainsMono-OFL.txt

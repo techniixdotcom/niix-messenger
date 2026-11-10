@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=NiiX
+GenericName=Private Messenger
+Comment=Private messenger over Tor. No phone number, no account, no server.
+Exec=niix
+Icon=app.niix.NiiX
+Terminal=false
+Categories=Network;InstantMessaging;Chat;
+Keywords=messenger;chat;tor;signal;encrypted;privacy;
+StartupNotify=true
+StartupWMClass=app.niix.NiiX
+SingleMainWindow=true
+X-GNOME-UsesNotifications=true

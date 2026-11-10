@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">เชื่อมกับโทรศัพท์ของฉัน</string>
+    <string name="desktop_link_explain">ใช้ NiiX บนโทรศัพท์อยู่แล้วหรือไม่ เชื่อมคอมพิวเตอร์เครื่องนี้เข้าไป: บัญชีเดียวกัน รายชื่อเดียวกัน หากต้องการรหัสผ่านให้ตั้งก่อน ซึ่งใช้เฉพาะเครื่องนี้</string>
+    <string name="desktop_link_later">ใช้คอมพิวเตอร์เครื่องนี้แยกต่างหาก</string>
+    <string name="desktop_unlock">ปลดล็อก</string>
+    <string name="desktop_lock_now">ล็อกตอนนี้</string>
+    <string name="desktop_quit">ออกจาก NiiX</string>
+    <string name="desktop_pick_chat">เลือกการสนทนา หรือเริ่มใหม่ด้วย +</string>
+    <string name="desktop_offline">ไม่มีเครือข่าย</string>
+    <string name="desktop_connected">เชื่อมต่อผ่าน Tor แล้ว</string>
+    <string name="desktop_connection_failed">เชื่อมต่อ Tor ไม่ได้ กำลังลองใหม่…</string>
+    <string name="desktop_background_notice">NiiX ยังทำงานอยู่เพื่อรับข้อความ ออกได้จากเมนู</string>
+    <string name="desktop_background_reason">รับข้อความขณะปิดหน้าต่าง</string>
+    <string name="desktop_call_locked">มีสายเรียกเข้า ปลดล็อก NiiX เพื่อรับสาย</string>
+    <string name="desktop_request_banner">บุคคลนี้ไม่อยู่ในรายชื่อของคุณ ยอมรับเพื่อตอบกลับ หรือบล็อก</string>
+    <string name="desktop_open">เปิด</string>
+    <string name="desktop_save">บันทึกสำเนา…</string>
+    <string name="desktop_open_failed">ไม่มีแอปที่เปิดไฟล์นี้ได้</string>
+    <string name="desktop_file_too_large">ไฟล์มีขนาดได้ถึง 100 MB</string>
+    <string name="desktop_recording_failed">บันทึกเสียงไม่ได้ ตรวจสอบว่าต่อไมโครโฟนและอนุญาตแล้ว</string>
+    <string name="desktop_read_qr_image">อ่าน QR โค้ดจากรูปภาพ</string>
+    <string name="desktop_no_qr_found">ไม่พบ QR โค้ดในรูปนั้น</string>
+    <string name="desktop_you">คุณ</string>
+    <string name="desktop_network">เครือข่าย</string>
+    <string name="desktop_key_storage">ที่เก็บกุญแจ</string>
+    <string name="desktop_key_storage_keyring">ในพวงกุญแจของเดสก์ท็อป</string>
+    <string name="desktop_key_storage_file">ในไฟล์ส่วนตัว ไม่มีพวงกุญแจให้ใช้ ใครที่อ่านไฟล์ของคุณได้จึงเปิด NiiX ได้ เว้นแต่คุณตั้งรหัสผ่าน</string>
+    <string name="desktop_devices_and_contacts">อุปกรณ์และรายชื่อติดต่อ</string>
+    <string name="desktop_devices_link_desc">บนอุปกรณ์ใหม่ เลือกเชื่อม แล้ววางรหัสที่แสดงไว้ที่นี่ หรือสแกนด้วยโทรศัพท์</string>
+    <string name="desktop_section">คอมพิวเตอร์เครื่องนี้</string>
+    <string name="desktop_autostart">เริ่มเมื่อเข้าสู่ระบบ</string>
+    <string name="desktop_autostart_desc">เริ่ม NiiX ในเบื้องหลังเมื่อเข้าสู่ระบบ เพื่อรับข้อความโดยไม่ต้องเปิด</string>
+    <string name="desktop_restoring">กำลังกู้คืนข้อมูลสำรอง…</string>
+</resources>

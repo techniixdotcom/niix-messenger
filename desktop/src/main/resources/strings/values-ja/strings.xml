@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">スマホとリンク</string>
+    <string name="desktop_link_explain">スマホで NiiX を使っていますか？このパソコンをリンクすると、同じアカウントと連絡先を使えます。パスコードが必要なら先に設定してください（このパソコン専用です）。</string>
+    <string name="desktop_link_later">このパソコンだけで使う</string>
+    <string name="desktop_unlock">ロック解除</string>
+    <string name="desktop_lock_now">今すぐロック</string>
+    <string name="desktop_quit">NiiX を終了</string>
+    <string name="desktop_pick_chat">会話を選ぶか、+ で新しく始めてください。</string>
+    <string name="desktop_offline">ネットワークなし</string>
+    <string name="desktop_connected">Tor で接続済み</string>
+    <string name="desktop_connection_failed">Tor に接続できません。再試行中…</string>
+    <string name="desktop_background_notice">メッセージを受け取るため NiiX は動作を続けます。終了はメニューから。</string>
+    <string name="desktop_background_reason">ウィンドウを閉じてもメッセージを受信</string>
+    <string name="desktop_call_locked">着信中です。応答するには NiiX のロックを解除してください。</string>
+    <string name="desktop_request_banner">この人は連絡先にいません。返信するには承認するか、ブロックしてください。</string>
+    <string name="desktop_open">開く</string>
+    <string name="desktop_save">コピーを保存…</string>
+    <string name="desktop_open_failed">このファイルを開けるアプリがありません</string>
+    <string name="desktop_file_too_large">ファイルは 100 MB まで</string>
+    <string name="desktop_recording_failed">録音できません。マイクが接続・許可されているか確認してください。</string>
+    <string name="desktop_read_qr_image">画像から QR コードを読む</string>
+    <string name="desktop_no_qr_found">その画像に QR コードが見つかりません</string>
+    <string name="desktop_you">あなた</string>
+    <string name="desktop_network">ネットワーク</string>
+    <string name="desktop_key_storage">鍵の保管場所</string>
+    <string name="desktop_key_storage_keyring">デスクトップのキーリング</string>
+    <string name="desktop_key_storage_file">非公開ファイル内。キーリングがないため、パスコードを使わない限り、あなたのファイルを読める人は NiiX を開けます。</string>
+    <string name="desktop_devices_and_contacts">デバイスと連絡先</string>
+    <string name="desktop_devices_link_desc">新しいデバイスでリンクを選び、表示されたコードをここに貼り付けるか、スマホでスキャンしてください。</string>
+    <string name="desktop_section">このパソコン</string>
+    <string name="desktop_autostart">ログイン時に起動</string>
+    <string name="desktop_autostart_desc">ログイン時に NiiX をバックグラウンドで起動し、開かなくてもメッセージを受け取ります。</string>
+    <string name="desktop_restoring">バックアップを復元中…</string>
+</resources>

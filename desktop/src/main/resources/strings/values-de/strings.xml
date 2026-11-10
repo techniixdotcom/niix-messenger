@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">Mit meinem Handy verbinden</string>
+    <string name="desktop_link_explain">Nutzt du NiiX schon auf dem Handy? Verbinde diesen Computer damit: dasselbe Konto, dieselben Kontakte. Wähle vorher einen Code, wenn du einen möchtest; er gilt nur für diesen Computer.</string>
+    <string name="desktop_link_later">Diesen Computer allein nutzen</string>
+    <string name="desktop_unlock">Entsperren</string>
+    <string name="desktop_lock_now">Jetzt sperren</string>
+    <string name="desktop_quit">NiiX beenden</string>
+    <string name="desktop_pick_chat">Wähle eine Unterhaltung oder beginne eine mit +.</string>
+    <string name="desktop_offline">Kein Netzwerk</string>
+    <string name="desktop_connected">Über Tor verbunden</string>
+    <string name="desktop_connection_failed">Tor nicht erreichbar. Neuer Versuch …</string>
+    <string name="desktop_background_notice">NiiX läuft weiter, damit Nachrichten ankommen. Beenden kannst du es im Menü.</string>
+    <string name="desktop_background_reason">Nachrichten empfangen, während das Fenster geschlossen ist</string>
+    <string name="desktop_call_locked">Eingehender Anruf. Entsperre NiiX, um ihn anzunehmen.</string>
+    <string name="desktop_request_banner">Diese Person ist nicht in deinen Kontakten. Annehmen, um zu antworten, oder blockieren.</string>
+    <string name="desktop_open">Öffnen</string>
+    <string name="desktop_save">Kopie speichern …</string>
+    <string name="desktop_open_failed">Keine App konnte diese Datei öffnen</string>
+    <string name="desktop_file_too_large">Dateien dürfen bis zu 100 MB groß sein</string>
+    <string name="desktop_recording_failed">Aufnahme nicht möglich. Prüfe, ob ein Mikrofon angeschlossen und erlaubt ist.</string>
+    <string name="desktop_read_qr_image">QR-Code aus einem Bild lesen</string>
+    <string name="desktop_no_qr_found">In diesem Bild wurde kein QR-Code gefunden</string>
+    <string name="desktop_you">Du</string>
+    <string name="desktop_network">Netzwerk</string>
+    <string name="desktop_key_storage">Schlüsselablage</string>
+    <string name="desktop_key_storage_keyring">Im Schlüsselbund des Desktops</string>
+    <string name="desktop_key_storage_file">In einer privaten Datei. Es war kein Schlüsselbund verfügbar, daher kann jeder, der deine Dateien lesen kann, NiiX öffnen, außer du nutzt einen Code.</string>
+    <string name="desktop_devices_and_contacts">Geräte und Kontakte</string>
+    <string name="desktop_devices_link_desc">Wähle auf dem neuen Gerät „Verbinden“ und füge den angezeigten Code hier ein oder scanne ihn mit dem Handy.</string>
+    <string name="desktop_section">Dieser Computer</string>
+    <string name="desktop_autostart">Beim Anmelden starten</string>
+    <string name="desktop_autostart_desc">Startet NiiX beim Anmelden im Hintergrund, damit Nachrichten ankommen, ohne dass du es öffnest.</string>
+    <string name="desktop_restoring">Sicherung wird wiederhergestellt …</string>
+</resources>

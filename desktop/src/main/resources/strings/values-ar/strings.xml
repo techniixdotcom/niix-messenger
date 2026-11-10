@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desktop_link_to_phone">الربط بهاتفي</string>
+    <string name="desktop_link_explain">هل تستخدم NiiX على هاتفك؟ اربط هذا الحاسوب به: الحساب نفسه وجهات الاتصال نفسها. اختر رمزًا أولًا إن أردت؛ فهو خاص بهذا الحاسوب.</string>
+    <string name="desktop_link_later">استخدام هذا الحاسوب منفردًا</string>
+    <string name="desktop_unlock">فتح القفل</string>
+    <string name="desktop_lock_now">القفل الآن</string>
+    <string name="desktop_quit">إنهاء NiiX</string>
+    <string name="desktop_pick_chat">اختر محادثة أو ابدأ واحدة بالزر +.</string>
+    <string name="desktop_offline">لا توجد شبكة</string>
+    <string name="desktop_connected">متصل عبر Tor</string>
+    <string name="desktop_connection_failed">تعذّر الوصول إلى Tor. إعادة المحاولة…</string>
+    <string name="desktop_background_notice">يبقى NiiX قيد التشغيل لتصلك الرسائل. أنهِه من القائمة.</string>
+    <string name="desktop_background_reason">استقبال الرسائل والنافذة مغلقة</string>
+    <string name="desktop_call_locked">مكالمة واردة. افتح قفل NiiX للرد.</string>
+    <string name="desktop_request_banner">هذا الشخص ليس من جهات اتصالك. اقبل للرد أو احظره.</string>
+    <string name="desktop_open">فتح</string>
+    <string name="desktop_save">حفظ نسخة…</string>
+    <string name="desktop_open_failed">لم يتمكن أي تطبيق من فتح هذا الملف</string>
+    <string name="desktop_file_too_large">حجم الملفات حتى 100 ميغابايت</string>
+    <string name="desktop_recording_failed">تعذّر التسجيل. تأكد من توصيل الميكروفون والسماح به.</string>
+    <string name="desktop_read_qr_image">قراءة رمز QR من صورة</string>
+    <string name="desktop_no_qr_found">لم يُعثر على رمز QR في تلك الصورة</string>
+    <string name="desktop_you">أنت</string>
+    <string name="desktop_network">الشبكة</string>
+    <string name="desktop_key_storage">تخزين المفاتيح</string>
+    <string name="desktop_key_storage_keyring">في سلسلة مفاتيح سطح المكتب</string>
+    <string name="desktop_key_storage_file">في ملف خاص. لم تتوفر سلسلة مفاتيح، لذا يمكن لأي شخص يقرأ ملفاتك فتح NiiX ما لم تستخدم رمزًا.</string>
+    <string name="desktop_devices_and_contacts">الأجهزة وجهات الاتصال</string>
+    <string name="desktop_devices_link_desc">على الجهاز الجديد اختر الربط، ثم الصق هنا الرمز الذي يعرضه أو امسحه بهاتفك.</string>
+    <string name="desktop_section">هذا الحاسوب</string>
+    <string name="desktop_autostart">التشغيل عند تسجيل الدخول</string>
+    <string name="desktop_autostart_desc">يشغّل NiiX في الخلفية عند تسجيل الدخول لتصلك الرسائل دون فتحه.</string>
+    <string name="desktop_restoring">جارٍ استعادة النسخة الاحتياطية…</string>
+</resources>

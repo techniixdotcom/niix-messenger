@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12 and later can blur whatever is behind a window, so the glass dialogs and sheets
+         blur the screen under them instead of just dimming it. -->
+    <style name="ThemeOverlay.Niix.MaterialAlertDialog" parent="Base.ThemeOverlay.Niix.MaterialAlertDialog">
+        <item name="android:windowBlurBehindEnabled">true</item>
+        <item name="android:windowBlurBehindRadius">24dp</item>
+    </style>
+
+    <style name="ThemeOverlay.Niix.BottomSheetDialog" parent="Base.ThemeOverlay.Niix.BottomSheetDialog">
+        <item name="android:windowBlurBehindEnabled">true</item>
+        <item name="android:windowBlurBehindRadius">24dp</item>
+    </style>
+</resources>
